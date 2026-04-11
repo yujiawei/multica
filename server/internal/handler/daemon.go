@@ -380,6 +380,20 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 					resp.Repos = repos
 				}
 			}
+
+			// Inject project learnings if the issue belongs to a project.
+			if issue.ProjectID.Valid {
+				if learnings, err := h.Queries.ListLearningsByProject(r.Context(), db.ListLearningsByProjectParams{
+					WorkspaceID: issue.WorkspaceID,
+					ProjectID:   issue.ProjectID,
+				}); err == nil && len(learnings) > 0 {
+					contents := make([]string, len(learnings))
+					for i, l := range learnings {
+						contents[i] = l.Content
+					}
+					resp.Learnings = contents
+				}
+			}
 		}
 
 		// Look up the prior session for this (agent, issue) pair so the daemon

@@ -52,6 +52,7 @@ import {
   TooltipContent,
 } from "@multica/ui/components/ui/tooltip";
 import { EmojiPicker } from "@multica/ui/components/common/emoji-picker";
+import { ProjectLearnings } from "./project-learnings";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -600,6 +601,9 @@ export function ProjectDetail({ projectId }: { projectId: string }) {
                   />
                 </div>
               </div>
+
+              {/* Learnings */}
+              <ProjectLearnings projectId={projectId} />
             </div>
           </div>
         </ResizablePanel>

@@ -155,6 +155,15 @@ func buildMetaSkillContent(provider string, ctx TaskContextForEnv) string {
 	b.WriteString("If you need to perform an operation that is not covered by any existing `multica` command, ")
 	b.WriteString("do NOT attempt to work around it. Instead, post a comment mentioning the workspace owner to request the missing functionality.\n\n")
 
+	if len(ctx.Learnings) > 0 {
+		b.WriteString("## Project Learnings\n\n")
+		b.WriteString("The following learnings have been collected from previous tasks in this project. Use them to avoid known pitfalls and follow established patterns:\n\n")
+		for _, l := range ctx.Learnings {
+			fmt.Fprintf(&b, "- %s\n", l)
+		}
+		b.WriteString("\n")
+	}
+
 	b.WriteString("## Output\n\n")
 	b.WriteString("Keep comments concise and natural — state the outcome, not the process.\n")
 	b.WriteString("Good: \"Fixed the login redirect. PR: https://...\"\n")
