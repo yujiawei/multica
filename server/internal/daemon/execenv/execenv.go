@@ -36,6 +36,7 @@ type TaskContextForEnv struct {
 	Repos             []RepoContextForEnv // workspace repos available for checkout
 	ChatSessionID        string              // non-empty for chat tasks
 	Learnings            []string            // project learnings for prompt injection
+	ProjectID            string              // project ID for recording learnings (empty if no project)
 	PipelineStage        string              // current pipeline stage name (empty if no pipeline)
 	PipelineInstructions string              // instructions for the current pipeline stage
 }

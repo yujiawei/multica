@@ -63,7 +63,8 @@ func buildMetaSkillContent(provider string, ctx TaskContextForEnv) string {
 	b.WriteString("- `multica issue comment add <issue-id> --content \"...\" [--parent <comment-id>]` — Post a comment (use --parent to reply to a specific comment)\n")
 	b.WriteString("- `multica issue comment delete <comment-id>` — Delete a comment\n")
 	b.WriteString("- `multica issue status <id> <status>` — Update issue status (todo, in_progress, in_review, done, blocked)\n")
-	b.WriteString("- `multica issue update <id> [--title X] [--description X] [--priority X]` — Update issue fields\n\n")
+	b.WriteString("- `multica issue update <id> [--title X] [--description X] [--priority X]` — Update issue fields\n")
+	b.WriteString("- `multica learning add --project-id <id> --category <category> --content \"...\"` — Record a project learning (categories: build, test, pattern, error, general)\n\n")
 
 	// Inject available repositories section.
 	if len(ctx.Repos) > 0 {
@@ -162,6 +163,17 @@ func buildMetaSkillContent(provider string, ctx TaskContextForEnv) string {
 			fmt.Fprintf(&b, "- %s\n", l)
 		}
 		b.WriteString("\n")
+	}
+
+	if ctx.ProjectID != "" {
+		b.WriteString("## Recording Learnings\n\n")
+		b.WriteString("When you discover something useful about this project, record it:\n")
+		fmt.Fprintf(&b, "- Build commands: `multica learning add --project-id %s --category build --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- Error patterns: `multica learning add --project-id %s --category error --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- Testing: `multica learning add --project-id %s --category test --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- Code patterns: `multica learning add --project-id %s --category pattern --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- General: `multica learning add --project-id %s --category general --content \"...\"`\n", ctx.ProjectID)
+		b.WriteString("\nKeep learnings short (1-2 sentences). Only add genuinely new insights.\n\n")
 	}
 
 	b.WriteString("## Output\n\n")
