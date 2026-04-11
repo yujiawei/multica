@@ -8,7 +8,8 @@ export const workspaceKeys = {
   agents: (wsId: string) => ["workspaces", wsId, "agents"] as const,
   skills: (wsId: string) => ["workspaces", wsId, "skills"] as const,
   assigneeFrequency: (wsId: string) => ["workspaces", wsId, "assignee-frequency"] as const,
-  webhooks: (wsId: string) => ["workspaces", wsId, "webhooks"] as const,
+webhooks: (wsId: string) => ["workspaces", wsId, "webhooks"] as const,
+githubSync: (wsId: string) => ["workspaces", wsId, "github-sync"] as const,
 };
 
 export function workspaceListOptions() {
@@ -51,5 +52,9 @@ export function webhookListOptions(wsId: string) {
   return queryOptions({
     queryKey: workspaceKeys.webhooks(wsId),
     queryFn: () => api.listWebhooks(),
+export function githubSyncListOptions(wsId: string) {
+  return queryOptions({
+    queryKey: workspaceKeys.githubSync(wsId),
+    queryFn: () => api.listGitHubSyncConfigs(),
   });
 }

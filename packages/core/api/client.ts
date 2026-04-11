@@ -56,6 +56,10 @@ ProjectLearning,
 Webhook,
   CreateWebhookRequest,
   UpdateWebhookRequest,
+GitHubSyncConfig,
+  CreateGitHubSyncConfigRequest,
+  UpdateGitHubSyncConfigRequest,
+  TriggerGitHubSyncResponse,
 } from "../types";
 import { type Logger, noopLogger } from "../logger";
 
@@ -754,30 +758,45 @@ export class ApiClient {
     });
   }
 
-  // Webhooks
+// Webhooks
   async listWebhooks(): Promise<Webhook[]> {
     return this.fetch("/api/webhooks");
   }
 
   async createWebhook(data: CreateWebhookRequest): Promise<Webhook> {
     return this.fetch("/api/webhooks", {
+// GitHub Sync
+  async listGitHubSyncConfigs(): Promise<GitHubSyncConfig[]> {
+    return this.fetch("/api/github-sync");
+  }
+
+  async createGitHubSyncConfig(data: CreateGitHubSyncConfigRequest): Promise<GitHubSyncConfig> {
+    return this.fetch("/api/github-sync", {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async updateWebhook(id: string, data: UpdateWebhookRequest): Promise<Webhook> {
+async updateWebhook(id: string, data: UpdateWebhookRequest): Promise<Webhook> {
     return this.fetch(`/api/webhooks/${id}`, {
+async updateGitHubSyncConfig(id: string, data: UpdateGitHubSyncConfigRequest): Promise<GitHubSyncConfig> {
+    return this.fetch(`/api/github-sync/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
-  async deleteWebhook(id: string): Promise<void> {
+async deleteWebhook(id: string): Promise<void> {
     await this.fetch(`/api/webhooks/${id}`, { method: "DELETE" });
   }
 
   async testWebhook(id: string): Promise<{ status: string }> {
     return this.fetch(`/api/webhooks/${id}/test`, { method: "POST" });
+async deleteGitHubSyncConfig(id: string): Promise<void> {
+    await this.fetch(`/api/github-sync/${id}`, { method: "DELETE" });
+  }
+
+  async triggerGitHubSync(id: string): Promise<TriggerGitHubSyncResponse> {
+    return this.fetch(`/api/github-sync/${id}/sync`, { method: "POST" });
   }
 }

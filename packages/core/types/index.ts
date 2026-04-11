@@ -36,3 +36,4 @@ export type { Project, ProjectStatus, ProjectPriority, CreateProjectRequest, Upd
 export type { PinnedItem, PinnedItemType, CreatePinRequest, ReorderPinsRequest } from "./pin";
 export type { ProjectLearning, LearningCategory, CreateProjectLearningRequest, ListProjectLearningsResponse } from "./learning";
 export type { Webhook, CreateWebhookRequest, UpdateWebhookRequest } from "./webhook";
+export type { GitHubSyncConfig, CreateGitHubSyncConfigRequest, UpdateGitHubSyncConfigRequest, TriggerGitHubSyncResponse } from "./github-sync";
