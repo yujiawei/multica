@@ -50,6 +50,9 @@ import type {
   CreatePinRequest,
   PinnedItemType,
   ReorderPinsRequest,
+  Webhook,
+  CreateWebhookRequest,
+  UpdateWebhookRequest,
 } from "../types";
 import { type Logger, noopLogger } from "../logger";
 
@@ -728,5 +731,32 @@ export class ApiClient {
       method: "PUT",
       body: JSON.stringify(data),
     });
+  }
+
+  // Webhooks
+  async listWebhooks(): Promise<Webhook[]> {
+    return this.fetch("/api/webhooks");
+  }
+
+  async createWebhook(data: CreateWebhookRequest): Promise<Webhook> {
+    return this.fetch("/api/webhooks", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateWebhook(id: string, data: UpdateWebhookRequest): Promise<Webhook> {
+    return this.fetch(`/api/webhooks/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    await this.fetch(`/api/webhooks/${id}`, { method: "DELETE" });
+  }
+
+  async testWebhook(id: string): Promise<{ status: string }> {
+    return this.fetch(`/api/webhooks/${id}/test`, { method: "POST" });
   }
 }
