@@ -17,6 +17,7 @@ import {
   User,
   UserMinus,
   UserPen,
+  Workflow,
 } from "lucide-react";
 import { Button } from "@multica/ui/components/ui/button";
 import {
@@ -49,6 +50,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useWorkspaceId } from "@multica/core/hooks";
 import { memberListOptions, agentListOptions } from "@multica/core/workspace/queries";
 import { projectListOptions } from "@multica/core/projects/queries";
+import { pipelineTemplateListOptions } from "@multica/core/pipelines";
 import { ActorAvatar } from "../../common/actor-avatar";
 import {
   SORT_OPTIONS,
@@ -385,6 +387,8 @@ export function IssuesHeader({ scopedIssues }: { scopedIssues: Issue[] }) {
   const setScope = useIssuesScopeStore((s) => s.setScope);
 
   const viewMode = useViewStore((s) => s.viewMode);
+  const boardGroupBy = useViewStore((s) => s.boardGroupBy);
+  const boardPipelineTemplateId = useViewStore((s) => s.boardPipelineTemplateId);
   const statusFilters = useViewStore((s) => s.statusFilters);
   const priorityFilters = useViewStore((s) => s.priorityFilters);
   const assigneeFilters = useViewStore((s) => s.assigneeFilters);
@@ -396,6 +400,10 @@ export function IssuesHeader({ scopedIssues }: { scopedIssues: Issue[] }) {
   const sortDirection = useViewStore((s) => s.sortDirection);
   const cardProperties = useViewStore((s) => s.cardProperties);
   const act = useViewStoreApi().getState();
+
+  const wsId = useWorkspaceId();
+  const { data: pipelineTemplates = [] } = useQuery(pipelineTemplateListOptions(wsId));
+  const hasPipelines = pipelineTemplates.length > 0;
 
   const counts = useIssueCounts(scopedIssues);
 
@@ -630,6 +638,61 @@ export function IssuesHeader({ scopedIssues }: { scopedIssues: Issue[] }) {
             <TooltipContent side="bottom">Display settings</TooltipContent>
           </Tooltip>
           <PopoverContent align="end" className="w-64 p-0">
+            {viewMode === "board" && hasPipelines && (
+              <div className="border-b px-3 py-2.5">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Group by
+                </span>
+                <div className="mt-2 flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`flex-1 text-xs ${boardGroupBy === "status" ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
+                    onClick={() => act.setBoardGroupBy("status")}
+                  >
+                    <CircleDot className="size-3" />
+                    Status
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`flex-1 text-xs ${boardGroupBy === "pipeline" ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`}
+                    onClick={() => act.setBoardGroupBy("pipeline")}
+                  >
+                    <Workflow className="size-3" />
+                    Pipeline
+                  </Button>
+                </div>
+                {boardGroupBy === "pipeline" && pipelineTemplates.length > 1 && (
+                  <div className="mt-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full justify-between text-xs"
+                          >
+                            {pipelineTemplates.find((t) => t.id === boardPipelineTemplateId)?.name ?? "Select pipeline"}
+                            <ChevronDown className="size-3 text-muted-foreground" />
+                          </Button>
+                        }
+                      />
+                      <DropdownMenuContent align="start" className="w-auto">
+                        {pipelineTemplates.map((t) => (
+                          <DropdownMenuItem
+                            key={t.id}
+                            onClick={() => act.setBoardPipelineTemplateId(t.id)}
+                          >
+                            {t.name}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="border-b px-3 py-2.5">
               <span className="text-xs font-medium text-muted-foreground">
                 Ordering
