@@ -50,6 +50,10 @@ import type {
   CreatePinRequest,
   PinnedItemType,
   ReorderPinsRequest,
+  GitHubSyncConfig,
+  CreateGitHubSyncConfigRequest,
+  UpdateGitHubSyncConfigRequest,
+  TriggerGitHubSyncResponse,
 } from "../types";
 import { type Logger, noopLogger } from "../logger";
 
@@ -728,5 +732,32 @@ export class ApiClient {
       method: "PUT",
       body: JSON.stringify(data),
     });
+  }
+
+  // GitHub Sync
+  async listGitHubSyncConfigs(): Promise<GitHubSyncConfig[]> {
+    return this.fetch("/api/github-sync");
+  }
+
+  async createGitHubSyncConfig(data: CreateGitHubSyncConfigRequest): Promise<GitHubSyncConfig> {
+    return this.fetch("/api/github-sync", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateGitHubSyncConfig(id: string, data: UpdateGitHubSyncConfigRequest): Promise<GitHubSyncConfig> {
+    return this.fetch(`/api/github-sync/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteGitHubSyncConfig(id: string): Promise<void> {
+    await this.fetch(`/api/github-sync/${id}`, { method: "DELETE" });
+  }
+
+  async triggerGitHubSync(id: string): Promise<TriggerGitHubSyncResponse> {
+    return this.fetch(`/api/github-sync/${id}/sync`, { method: "POST" });
   }
 }
