@@ -22,10 +22,11 @@ import (
 )
 
 type TaskService struct {
-	Queries   *db.Queries
-	TxStarter TxStarter
-	Hub       *realtime.Hub
-	Bus       *events.Bus
+	Queries    *db.Queries
+	TxStarter  TxStarter
+	Hub        *realtime.Hub
+	Bus        *events.Bus
+	WebhookSvc *WebhookService
 }
 
 func NewTaskService(q *db.Queries, tx TxStarter, hub *realtime.Hub, bus *events.Bus) *TaskService {
@@ -459,6 +460,9 @@ func (s *TaskService) CompleteTask(ctx context.Context, taskID pgtype.UUID, resu
 	// Broadcast
 	s.broadcastTaskEvent(ctx, protocol.EventTaskCompleted, task)
 
+	// Webhook notification
+	s.sendTaskWebhook(ctx, "task.completed", task, result)
+
 	return &task, nil
 }
 
@@ -544,6 +548,9 @@ func (s *TaskService) FailTask(ctx context.Context, taskID pgtype.UUID, errMsg, 
 
 	// Broadcast
 	s.broadcastTaskEvent(ctx, protocol.EventTaskFailed, task)
+
+	// Webhook notification
+	s.sendTaskWebhook(ctx, "task.failed", task, nil)
 
 	return &task, nil
 }
@@ -1027,6 +1034,57 @@ func (s *TaskService) createAgentComment(ctx context.Context, issueID, agentID p
 			"issue_status": issue.Status,
 		},
 	})
+}
+
+// sendTaskWebhook sends a webhook notification for task completion or failure.
+func (s *TaskService) sendTaskWebhook(ctx context.Context, event string, task db.AgentTaskQueue, result []byte) {
+	if s.WebhookSvc == nil || !task.IssueID.Valid {
+		return
+	}
+
+	issue, err := s.Queries.GetIssue(ctx, task.IssueID)
+	if err != nil {
+		return
+	}
+
+	agent, err := s.Queries.GetAgent(ctx, task.AgentID)
+	if err != nil {
+		return
+	}
+
+	ws, err := s.Queries.GetWorkspace(ctx, issue.WorkspaceID)
+	if err != nil {
+		return
+	}
+
+	prefix := ws.IssuePrefix
+	identifier := prefix + "-" + strconv.Itoa(int(issue.Number))
+
+	var durationMs int64
+	if task.StartedAt.Valid && task.CompletedAt.Valid {
+		durationMs = task.CompletedAt.Time.Sub(task.StartedAt.Time).Milliseconds()
+	}
+
+	payload := WebhookPayload{
+		Workspace: WebhookWS{ID: util.UUIDToString(ws.ID), Name: ws.Name},
+		Issue:     &WebhookIssue{ID: util.UUIDToString(issue.ID), Identifier: identifier, Title: issue.Title, Status: issue.Status},
+		Task:      &WebhookTask{ID: util.UUIDToString(task.ID), Agent: agent.Name, DurationMs: durationMs},
+	}
+
+	if result != nil {
+		var completed protocol.TaskCompletedPayload
+		if json.Unmarshal(result, &completed) == nil {
+			payload.Result = &WebhookResult{Output: completed.Output, PRUrl: completed.PRURL}
+		}
+	}
+	if task.Error.Valid {
+		if payload.Result == nil {
+			payload.Result = &WebhookResult{}
+		}
+		payload.Result.Error = task.Error.String
+	}
+
+	s.WebhookSvc.SendEvent(ctx, issue.WorkspaceID, event, payload)
 }
 
 func issueToMap(issue db.Issue, issuePrefix string) map[string]any {

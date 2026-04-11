@@ -47,6 +47,7 @@ type Handler struct {
 	TaskService           *service.TaskService
 	AutopilotService      *service.AutopilotService
 	EmailService          *service.EmailService
+	WebhookService        *service.WebhookService
 	PingStore             *PingStore
 	UpdateStore           *UpdateStore
 	ModelListStore        *ModelListStore
@@ -68,6 +69,8 @@ func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *event
 		analyticsClient = analytics.NoopClient{}
 	}
 
+	webhookSvc := service.NewWebhookService(queries)
+
 	taskSvc := service.NewTaskService(queries, txStarter, hub, bus)
 	return &Handler{
 		Queries:               queries,
@@ -78,6 +81,7 @@ func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *event
 		TaskService:           taskSvc,
 		AutopilotService:      service.NewAutopilotService(queries, txStarter, bus, taskSvc),
 		EmailService:          emailService,
+		WebhookService:        webhookSvc,
 		PingStore:             NewPingStore(),
 		UpdateStore:           NewUpdateStore(),
 		ModelListStore:        NewModelListStore(),
