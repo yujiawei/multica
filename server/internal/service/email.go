@@ -1,6 +1,7 @@
 package service
 
 import (
+	"crypto/tls"
 	"fmt"
 	"html"
 	"os"
@@ -17,26 +18,65 @@ import (
 const maxSubjectFieldRunes = 60
 
 type EmailService struct {
-	client    *resend.Client
+	// Resend mode
+	resendClient *resend.Client
+	// SMTP mode
+	smtpServer   string
+	smtpPort     string
+	smtpUsername string
+	smtpPassword string
+	// Common
 	fromEmail string
+	mode      string // "resend", "smtp", or "dev"
 }
 
 func NewEmailService() *EmailService {
-	apiKey := os.Getenv("RESEND_API_KEY")
-	from := os.Getenv("RESEND_FROM_EMAIL")
+	svc := &EmailService{}
+
+	// Check SMTP first (preferred when configured)
+	smtpServer := os.Getenv("SMTP_SERVER")
+	smtpUsername := os.Getenv("SMTP_USERNAME")
+	smtpPassword := os.Getenv("SMTP_PASSWORD")
+	smtpPort := os.Getenv("SMTP_PORT")
+	if smtpPort == "" {
+		smtpPort = "465"
+	}
+
+	from := os.Getenv("SMTP_FROM")
+	if from == "" {
+		from = os.Getenv("RESEND_FROM_EMAIL")
+	}
+	if from == "" && smtpUsername != "" {
+		from = smtpUsername
+	}
 	if from == "" {
 		from = "noreply@multica.ai"
 	}
+	svc.fromEmail = from
 
-	var client *resend.Client
+	if smtpServer != "" && smtpUsername != "" && smtpPassword != "" {
+		svc.smtpServer = smtpServer
+		svc.smtpPort = smtpPort
+		svc.smtpUsername = smtpUsername
+		svc.smtpPassword = smtpPassword
+		svc.mode = "smtp"
+		fmt.Printf("[EMAIL] Using SMTP: %s:%s as %s\n", smtpServer, smtpPort, from)
+		return svc
+	}
+
+	// Fall back to Resend
+	apiKey := os.Getenv("RESEND_API_KEY")
 	if apiKey != "" {
-		client = resend.NewClient(apiKey)
+		svc.resendClient = resend.NewClient(apiKey)
+		svc.mode = "resend"
+		fmt.Printf("[EMAIL] Using Resend API as %s\n", from)
+		return svc
 	}
 
-	return &EmailService{
-		client:    client,
-		fromEmail: from,
-	}
+	// Dev mode — print to log
+	svc.mode = "dev"
+	fmt.Println("[EMAIL] No email provider configured — codes will be printed to log")
+	return svc
 }
 
 // SendVerificationCode sends a one-time login code. The code is server-generated
@@ -44,25 +84,34 @@ func NewEmailService() *EmailService {
 // If that ever changes, escape the user-controlled fields the same way
 // SendInvitationEmail does.
 func (s *EmailService) SendVerificationCode(to, code string) error {
-	if s.client == nil {
+	subject := "Your Multica verification code"
+	html := fmt.Sprintf(
+		`<div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
+			<h2>Your verification code</h2>
+			<p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 24px 0;">%s</p>
+			<p>This code expires in 10 minutes.</p>
+			<p style="color: #666; font-size: 14px;">If you didn't request this code, you can safely ignore this email.</p>
+		</div>`, code)
+
+	switch s.mode {
+	case "smtp":
+		return s.sendSMTP(to, subject, html)
+	case "resend":
+		return s.sendResend(to, subject, html)
+	default:
 		fmt.Printf("[DEV] Verification code for %s: %s\n", to, code)
 		return nil
 	}
+}
 
+func (s *EmailService) sendResend(to, subject, html string) error {
 	params := &resend.SendEmailRequest{
 		From:    s.fromEmail,
 		To:      []string{to},
-		Subject: "Your Multica verification code",
-		Html: fmt.Sprintf(
-			`<div style="font-family: sans-serif; max-width: 400px; margin: 0 auto;">
-				<h2>Your verification code</h2>
-				<p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 24px 0;">%s</p>
-				<p>This code expires in 10 minutes.</p>
-				<p style="color: #666; font-size: 14px;">If you didn't request this code, you can safely ignore this email.</p>
-			</div>`, code),
+		Subject: subject,
+		Html:    html,
 	}
-
-	_, err := s.client.Emails.Send(params)
+	_, err := s.resendClient.Emails.Send(params)
 	return err
 }
 
