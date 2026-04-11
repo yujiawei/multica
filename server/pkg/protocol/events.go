@@ -71,6 +71,11 @@ const (
 	EventPinCreated = "pin:created"
 	EventPinDeleted = "pin:deleted"
 
+	// Pipeline events
+	EventPipelineTemplateCreated = "pipeline_template:created"
+	EventPipelineTemplateUpdated = "pipeline_template:updated"
+	EventPipelineTemplateDeleted = "pipeline_template:deleted"
+
 	// Daemon events
 	EventDaemonHeartbeat = "daemon:heartbeat"
 	EventDaemonRegister  = "daemon:register"

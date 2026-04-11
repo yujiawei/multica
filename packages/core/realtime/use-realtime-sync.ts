@@ -12,6 +12,7 @@ import { defaultStorage } from "../platform/storage";
 import { issueKeys } from "../issues/queries";
 import { projectKeys } from "../projects/queries";
 import { pinKeys } from "../pins/queries";
+import { pipelineKeys } from "../pipelines/queries";
 import { runtimeKeys } from "../runtimes/queries";
 import {
   onIssueCreated,
@@ -103,6 +104,10 @@ export function useRealtimeSync(
       pin: () => {
         const wsId = workspaceStore.getState().workspace?.id;
         if (wsId) qc.invalidateQueries({ queryKey: pinKeys.all(wsId) });
+      },
+      pipeline_template: () => {
+        const wsId = workspaceStore.getState().workspace?.id;
+        if (wsId) qc.invalidateQueries({ queryKey: pipelineKeys.all(wsId) });
       },
       daemon: () => {
         const wsId = workspaceStore.getState().workspace?.id;
@@ -317,6 +322,7 @@ export function useRealtimeSync(
           qc.invalidateQueries({ queryKey: workspaceKeys.members(wsId) });
           qc.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
           qc.invalidateQueries({ queryKey: projectKeys.all(wsId) });
+          qc.invalidateQueries({ queryKey: pipelineKeys.all(wsId) });
           qc.invalidateQueries({ queryKey: runtimeKeys.all(wsId) });
         }
         qc.invalidateQueries({ queryKey: workspaceKeys.list() });

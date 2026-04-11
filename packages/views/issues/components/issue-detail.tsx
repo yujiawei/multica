@@ -84,6 +84,7 @@ import { pinListOptions } from "@multica/core/pins";
 import { useCreatePin, useDeletePin } from "@multica/core/pins";
 
 import { ProgressRing } from "./progress-ring";
+import { PipelineTimeline } from "./pipeline-timeline";
 
 function shortDate(date: string | null): string {
   if (!date) return "—";
@@ -1246,6 +1247,14 @@ export function IssueDetail({ issueId, onDelete, defaultSidebarOpen = true, layo
                 </AppLink>
               </div>
             </div>
+          )}
+
+          {/* Pipeline stage timeline */}
+          {issue.pipeline_template_id && issue.stage_results && (
+            <PipelineTimeline
+              currentStage={issue.current_stage}
+              stageResults={issue.stage_results}
+            />
           )}
 
           {/* Details section */}

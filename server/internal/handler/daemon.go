@@ -380,6 +380,22 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 					resp.Repos = repos
 				}
 			}
+
+			// Populate pipeline stage info if the issue has a pipeline.
+			if issue.PipelineTemplateID.Valid && issue.CurrentStage.Valid {
+				resp.PipelineStage = issue.CurrentStage.String
+				if tmpl, err := h.Queries.GetPipelineTemplate(r.Context(), issue.PipelineTemplateID); err == nil {
+					var stages []PipelineStage
+					if json.Unmarshal(tmpl.Stages, &stages) == nil {
+						for _, s := range stages {
+							if s.Name == issue.CurrentStage.String {
+								resp.PipelineInstructions = s.Instructions
+								break
+							}
+						}
+					}
+				}
+			}
 		}
 
 		// Look up the prior session for this (agent, issue) pair so the daemon

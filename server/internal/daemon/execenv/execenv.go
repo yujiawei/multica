@@ -35,6 +35,8 @@ type TaskContextForEnv struct {
 	AgentSkills       []SkillContextForEnv
 	Repos             []RepoContextForEnv // workspace repos available for checkout
 	ChatSessionID     string              // non-empty for chat tasks
+	PipelineStage     string              // current pipeline stage name (empty if no pipeline)
+	PipelineInstructions string           // instructions for the current pipeline stage
 }
 
 // SkillContextForEnv represents a skill to be written into the execution environment.

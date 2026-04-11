@@ -50,6 +50,11 @@ import type {
   CreatePinRequest,
   PinnedItemType,
   ReorderPinsRequest,
+  PipelineTemplate,
+  CreatePipelineTemplateRequest,
+  UpdatePipelineTemplateRequest,
+  ListPipelineTemplatesResponse,
+  PipelineStatusResponse,
 } from "../types";
 import { type Logger, noopLogger } from "../logger";
 
@@ -705,6 +710,46 @@ export class ApiClient {
 
   async deleteProject(id: string): Promise<void> {
     await this.fetch(`/api/projects/${id}`, { method: "DELETE" });
+  }
+
+  // Pipeline Templates
+  async listPipelineTemplates(): Promise<ListPipelineTemplatesResponse> {
+    return this.fetch("/api/pipeline-templates");
+  }
+
+  async getPipelineTemplate(id: string): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates/${id}`);
+  }
+
+  async createPipelineTemplate(data: CreatePipelineTemplateRequest): Promise<PipelineTemplate> {
+    const search = new URLSearchParams();
+    if (this.workspaceId) search.set("workspace_id", this.workspaceId);
+    return this.fetch(`/api/pipeline-templates?${search}`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePipelineTemplate(id: string): Promise<void> {
+    await this.fetch(`/api/pipeline-templates/${id}`, { method: "DELETE" });
+  }
+
+  async getIssuePipelineStatus(issueId: string): Promise<PipelineStatusResponse> {
+    return this.fetch(`/api/issues/${issueId}/pipeline-status`);
+  }
+
+  async advanceIssueStage(issueId: string, data?: { result?: string; summary?: string }): Promise<Issue> {
+    return this.fetch(`/api/issues/${issueId}/advance-stage`, {
+      method: "POST",
+      body: JSON.stringify(data ?? {}),
+    });
   }
 
   // Pins

@@ -37,7 +37,60 @@ export interface Issue {
   project_id: string | null;
   position: number;
   due_date: string | null;
+  pipeline_template_id: string | null;
+  current_stage: string | null;
+  stage_results?: Record<string, StageResult> | null;
   reactions?: IssueReaction[];
   created_at: string;
   updated_at: string;
+}
+
+export interface StageResult {
+  started_at?: string;
+  completed_at?: string;
+  completed_by?: string;
+  result?: string;
+  summary?: string;
+}
+
+export interface PipelineStage {
+  name: string;
+  label: string;
+  instructions: string;
+}
+
+export interface PipelineTemplate {
+  id: string;
+  workspace_id: string;
+  name: string;
+  description: string | null;
+  stages: PipelineStage[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatePipelineTemplateRequest {
+  name: string;
+  description?: string;
+  stages: PipelineStage[];
+}
+
+export interface UpdatePipelineTemplateRequest {
+  name?: string;
+  description?: string;
+  stages?: PipelineStage[];
+}
+
+export interface ListPipelineTemplatesResponse {
+  pipeline_templates: PipelineTemplate[];
+  total: number;
+}
+
+export interface PipelineStatusResponse {
+  issue_id: string;
+  pipeline_template_id: string | null;
+  template_name: string | null;
+  current_stage: string | null;
+  stages: PipelineStage[] | null;
+  stage_results: Record<string, StageResult> | null;
 }
