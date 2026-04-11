@@ -36,6 +36,7 @@ type Task struct {
 	ChatSessionID        string     `json:"chat_session_id,omitempty"`       // non-empty for chat tasks
 	ChatMessage          string     `json:"chat_message,omitempty"`          // user message content for chat tasks
 	Learnings            []string   `json:"learnings,omitempty"`             // project learnings for prompt injection
+	ProjectID            string     `json:"project_id,omitempty"`            // project ID for recording learnings
 	PipelineStage        string     `json:"pipeline_stage,omitempty"`        // current pipeline stage name
 	PipelineInstructions string     `json:"pipeline_instructions,omitempty"` // instructions for current stage
 }

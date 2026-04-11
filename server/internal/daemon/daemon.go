@@ -899,6 +899,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, taskLo
 		Repos:                convertReposForEnv(task.Repos),
 		ChatSessionID:        task.ChatSessionID,
 		Learnings:            task.Learnings,
+		ProjectID:            task.ProjectID,
 		PipelineStage:        task.PipelineStage,
 		PipelineInstructions: task.PipelineInstructions,
 	}
@@ -943,6 +944,9 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, taskLo
 		"MULTICA_AGENT_NAME":   agentName,
 		"MULTICA_AGENT_ID":     task.AgentID,
 		"MULTICA_TASK_ID":      task.ID,
+	}
+	if task.ProjectID != "" {
+		agentEnv["MULTICA_PROJECT_ID"] = task.ProjectID
 	}
 	// Ensure the multica CLI is on PATH inside the agent's environment.
 	// Some runtimes (e.g. Codex) run in an isolated sandbox that may not
