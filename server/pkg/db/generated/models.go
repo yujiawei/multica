@@ -359,6 +359,17 @@ type VerificationCode struct {
 	Attempts  int32              `json:"attempts"`
 }
 
+type Webhook struct {
+	ID          pgtype.UUID        `json:"id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	Url         string             `json:"url"`
+	Secret      pgtype.Text        `json:"secret"`
+	Events      []string           `json:"events"`
+	Active      bool               `json:"active"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Workspace struct {
 	ID           pgtype.UUID        `json:"id"`
 	Name         string             `json:"name"`
