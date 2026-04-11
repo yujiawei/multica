@@ -52,7 +52,10 @@ export type WSEventType =
   | "project:updated"
   | "project:deleted"
   | "pin:created"
-  | "pin:deleted";
+  | "pin:deleted"
+  | "pipeline_template:created"
+  | "pipeline_template:updated"
+  | "pipeline_template:deleted";
 
 export interface WSMessage<T = unknown> {
   type: WSEventType;

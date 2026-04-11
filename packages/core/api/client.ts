@@ -60,6 +60,11 @@ GitHubSyncConfig,
   CreateGitHubSyncConfigRequest,
   UpdateGitHubSyncConfigRequest,
   TriggerGitHubSyncResponse,
+PipelineTemplate,
+  CreatePipelineTemplateRequest,
+  UpdatePipelineTemplateRequest,
+  ListPipelineTemplatesResponse,
+  PipelineStatusResponse,
 } from "../types";
 import { type Logger, noopLogger } from "../logger";
 
@@ -717,7 +722,7 @@ export class ApiClient {
     await this.fetch(`/api/projects/${id}`, { method: "DELETE" });
   }
 
-  // Project Learnings
+// Project Learnings
   async listProjectLearnings(projectId: string, params?: { category?: string }): Promise<ListProjectLearningsResponse> {
     const search = new URLSearchParams();
     if (params?.category) search.set("category", params.category);
@@ -726,13 +731,46 @@ export class ApiClient {
 
   async createProjectLearning(projectId: string, data: CreateProjectLearningRequest): Promise<ProjectLearning> {
     return this.fetch(`/api/projects/${projectId}/learnings`, {
+// Pipeline Templates
+  async listPipelineTemplates(): Promise<ListPipelineTemplatesResponse> {
+    return this.fetch("/api/pipeline-templates");
+  }
+
+  async getPipelineTemplate(id: string): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates/${id}`);
+  }
+
+  async createPipelineTemplate(data: CreatePipelineTemplateRequest): Promise<PipelineTemplate> {
+    const search = new URLSearchParams();
+    if (this.workspaceId) search.set("workspace_id", this.workspaceId);
+    return this.fetch(`/api/pipeline-templates?${search}`, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-  async deleteProjectLearning(learningId: string): Promise<void> {
+async deleteProjectLearning(learningId: string): Promise<void> {
     await this.fetch(`/api/learnings/${learningId}`, { method: "DELETE" });
+async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePipelineTemplate(id: string): Promise<void> {
+    await this.fetch(`/api/pipeline-templates/${id}`, { method: "DELETE" });
+  }
+
+  async getIssuePipelineStatus(issueId: string): Promise<PipelineStatusResponse> {
+    return this.fetch(`/api/issues/${issueId}/pipeline-status`);
+  }
+
+  async advanceIssueStage(issueId: string, data?: { result?: string; summary?: string }): Promise<Issue> {
+    return this.fetch(`/api/issues/${issueId}/advance-stage`, {
+      method: "POST",
+      body: JSON.stringify(data ?? {}),
+    });
   }
 
   // Pins

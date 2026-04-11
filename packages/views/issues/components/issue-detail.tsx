@@ -85,6 +85,7 @@ import { useCreatePin, useDeletePin } from "@multica/core/pins";
 import { projectLearningsOptions } from "@multica/core/learnings/queries";
 
 import { ProgressRing } from "./progress-ring";
+import { PipelineTimeline } from "./pipeline-timeline";
 
 function LearningsCount({ projectId }: { projectId: string }) {
   const wsId = useWorkspaceId();
@@ -1265,6 +1266,14 @@ export function IssueDetail({ issueId, onDelete, defaultSidebarOpen = true, layo
                 </AppLink>
               </div>
             </div>
+          )}
+
+          {/* Pipeline stage timeline */}
+          {issue.pipeline_template_id && issue.stage_results && (
+            <PipelineTimeline
+              currentStage={issue.current_stage}
+              stageResults={issue.stage_results}
+            />
           )}
 
           {/* Details section */}

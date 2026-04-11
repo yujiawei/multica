@@ -262,6 +262,8 @@ const issueDefaults = {
   parent_issue_id: null,
   project_id: null,
   position: 0,
+  pipeline_template_id: null,
+  current_stage: null,
 };
 
 const mockIssues: Issue[] = [

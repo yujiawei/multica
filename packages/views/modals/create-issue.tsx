@@ -16,6 +16,7 @@ import { Button } from "@multica/ui/components/ui/button";
 import { ContentEditor, type ContentEditorRef, TitleEditor, useFileDropZone, FileDropOverlay } from "../editor";
 import { StatusIcon, StatusPicker, PriorityPicker, AssigneePicker, DueDatePicker } from "../issues/components";
 import { ProjectPicker } from "../projects/components/project-picker";
+import { PipelinePicker } from "../issues/components/pipeline-picker";
 import { useWorkspaceStore } from "@multica/core/workspace";
 import { useIssueDraftStore } from "@multica/core/issues/stores/draft-store";
 import { useCreateIssue } from "@multica/core/issues/mutations";
@@ -73,6 +74,7 @@ export function CreateIssueModal({ onClose, data }: { onClose: () => void; data?
   const [projectId, setProjectId] = useState<string | undefined>(
     (data?.project_id as string) || undefined,
   );
+  const [pipelineTemplateId, setPipelineTemplateId] = useState<string | undefined>(undefined);
   const [isExpanded, setIsExpanded] = useState(false);
 
   // File upload — collect attachment IDs so we can link them after issue creation.
@@ -112,6 +114,7 @@ export function CreateIssueModal({ onClose, data }: { onClose: () => void; data?
         attachment_ids: attachmentIds.length > 0 ? attachmentIds : undefined,
         parent_issue_id: (data?.parent_issue_id as string) || undefined,
         project_id: projectId,
+        pipeline_template_id: pipelineTemplateId,
       });
       clearDraft();
       onClose();
@@ -271,6 +274,14 @@ export function CreateIssueModal({ onClose, data }: { onClose: () => void; data?
           <ProjectPicker
             projectId={projectId ?? null}
             onUpdate={(u) => setProjectId(u.project_id ?? undefined)}
+            triggerRender={<PillButton />}
+            align="start"
+          />
+
+          {/* Pipeline */}
+          <PipelinePicker
+            pipelineTemplateId={pipelineTemplateId ?? null}
+            onUpdate={(id) => setPipelineTemplateId(id ?? undefined)}
             triggerRender={<PillButton />}
             align="start"
           />

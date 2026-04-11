@@ -381,7 +381,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			// Inject project learnings if the issue belongs to a project.
+// Inject project learnings if the issue belongs to a project.
 			if issue.ProjectID.Valid {
 				if learnings, err := h.Queries.ListLearningsByProject(r.Context(), db.ListLearningsByProjectParams{
 					WorkspaceID: issue.WorkspaceID,
@@ -392,6 +392,19 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 						contents[i] = l.Content
 					}
 					resp.Learnings = contents
+// Populate pipeline stage info if the issue has a pipeline.
+			if issue.PipelineTemplateID.Valid && issue.CurrentStage.Valid {
+				resp.PipelineStage = issue.CurrentStage.String
+				if tmpl, err := h.Queries.GetPipelineTemplate(r.Context(), issue.PipelineTemplateID); err == nil {
+					var stages []PipelineStage
+					if json.Unmarshal(tmpl.Stages, &stages) == nil {
+						for _, s := range stages {
+							if s.Name == issue.CurrentStage.String {
+								resp.PipelineInstructions = s.Instructions
+								break
+							}
+						}
+					}
 				}
 			}
 		}

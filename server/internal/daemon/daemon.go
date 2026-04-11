@@ -891,7 +891,7 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, taskLo
 	// Repos are passed as metadata only — the agent checks them out on demand
 	// via `multica repo checkout <url>`.
 	taskCtx := execenv.TaskContextForEnv{
-		IssueID:           task.IssueID,
+IssueID:           task.IssueID,
 		TriggerCommentID:  task.TriggerCommentID,
 		AgentName:         agentName,
 		AgentInstructions: instructions,
@@ -899,6 +899,15 @@ func (d *Daemon) runTask(ctx context.Context, task Task, provider string, taskLo
 		Repos:             convertReposForEnv(task.Repos),
 		ChatSessionID:     task.ChatSessionID,
 		Learnings:         task.Learnings,
+IssueID:              task.IssueID,
+		TriggerCommentID:     task.TriggerCommentID,
+		AgentName:            agentName,
+		AgentInstructions:    instructions,
+		AgentSkills:          convertSkillsForEnv(skills),
+		Repos:                convertReposForEnv(task.Repos),
+		ChatSessionID:        task.ChatSessionID,
+		PipelineStage:        task.PipelineStage,
+		PipelineInstructions: task.PipelineInstructions,
 	}
 
 	// Try to reuse the workdir from a previous task on the same (agent, issue) pair.

@@ -222,6 +222,9 @@ type Issue struct {
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 	Number             int32              `json:"number"`
 	ProjectID          pgtype.UUID        `json:"project_id"`
+	PipelineTemplateID pgtype.UUID        `json:"pipeline_template_id"`
+	CurrentStage       pgtype.Text        `json:"current_stage"`
+	StageResults       []byte             `json:"stage_results"`
 }
 
 type IssueDependency struct {
@@ -289,6 +292,16 @@ type PinnedItem struct {
 	ItemID      pgtype.UUID        `json:"item_id"`
 	Position    float64            `json:"position"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type PipelineTemplate struct {
+	ID          pgtype.UUID        `json:"id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	Name        string             `json:"name"`
+	Description pgtype.Text        `json:"description"`
+	Stages      []byte             `json:"stages"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Project struct {

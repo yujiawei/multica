@@ -1,4 +1,4 @@
-export type { Issue, IssueStatus, IssuePriority, IssueAssigneeType, IssueReaction } from "./issue";
+export type { Issue, IssueStatus, IssuePriority, IssueAssigneeType, IssueReaction, StageResult, PipelineStage, PipelineTemplate, CreatePipelineTemplateRequest, UpdatePipelineTemplateRequest, ListPipelineTemplatesResponse, PipelineStatusResponse } from "./issue";
 export type {
   Agent,
   AgentStatus,
