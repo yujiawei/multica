@@ -2,6 +2,7 @@
 
 import React from "react";
 import { User, Palette, Key, Settings, Users, FolderGit2 } from "lucide-react";
+import { User, Palette, Key, Settings, Users, FolderGit2, Webhook } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@multica/ui/components/ui/tabs";
 import { useCurrentWorkspace } from "@multica/core/paths";
 import { AccountTab } from "./account-tab";
@@ -10,6 +11,7 @@ import { TokensTab } from "./tokens-tab";
 import { WorkspaceTab } from "./workspace-tab";
 import { MembersTab } from "./members-tab";
 import { RepositoriesTab } from "./repositories-tab";
+import { WebhooksTab } from "./webhooks-tab";
 
 const accountTabs = [
   { value: "profile", label: "Profile", icon: User },
@@ -21,6 +23,7 @@ const workspaceTabs = [
   { value: "workspace", label: "General", icon: Settings },
   { value: "repositories", label: "Repositories", icon: FolderGit2 },
   { value: "members", label: "Members", icon: Users },
+  { value: "webhooks", label: "Webhooks", icon: Webhook },
 ];
 
 export interface ExtraSettingsTab {
@@ -86,6 +89,7 @@ export function SettingsPage({ extraAccountTabs }: SettingsPageProps = {}) {
           {extraAccountTabs?.map((tab) => (
             <TabsContent key={tab.value} value={tab.value}>{tab.content}</TabsContent>
           ))}
+          <TabsContent value="webhooks"><WebhooksTab /></TabsContent>
         </div>
       </div>
     </Tabs>
