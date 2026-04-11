@@ -59,6 +59,12 @@ func (s *GitHubSyncService) SyncConfig(ctx context.Context, config db.GithubSync
 	githubRepo := config.RepoOwner + "/" + config.RepoName
 	created := 0
 
+	// Fetch workspace for issue identifier prefix.
+	ws, err := s.Queries.GetWorkspace(ctx, config.WorkspaceID)
+	if err != nil {
+		return 0, fmt.Errorf("get workspace: %w", err)
+	}
+
 	for _, ghIss := range issues {
 		// Check if already mapped.
 		_, err := s.Queries.GetGitHubIssueMappingByGitHub(ctx, db.GetGitHubIssueMappingByGitHubParams{
@@ -89,6 +95,14 @@ func (s *GitHubSyncService) SyncConfig(ctx context.Context, config db.GithubSync
 			slog.Error("github sync: failed to create mapping",
 				"github_issue", ghIss.Number, "multica_issue", util.UUIDToString(multicaIssue.ID), "error", err)
 			continue
+		}
+
+		// Post a comment on the GitHub issue linking back to the Multica issue.
+		identifier := fmt.Sprintf("%s-%d", ws.IssuePrefix, multicaIssue.Number)
+		if err := s.postGitHubComment(ctx, config, ghIss.Number, identifier); err != nil {
+			slog.Error("github sync: failed to post github comment",
+				"github_issue", ghIss.Number, "error", err)
+			// Non-fatal: the issue was created successfully, just the comment failed.
 		}
 
 		created++
@@ -195,12 +209,6 @@ func (s *GitHubSyncService) fetchLabeledIssues(ctx context.Context, config db.Gi
 }
 
 func (s *GitHubSyncService) createMulticaIssue(ctx context.Context, config db.GithubSyncConfig, ghIss ghIssue) (db.Issue, error) {
-	// Get workspace to increment issue counter.
-	ws, err := s.Queries.GetWorkspace(ctx, config.WorkspaceID)
-	if err != nil {
-		return db.Issue{}, fmt.Errorf("get workspace: %w", err)
-	}
-
 	// Increment issue counter.
 	counter, err := s.Queries.IncrementIssueCounter(ctx, config.WorkspaceID)
 	if err != nil {
@@ -239,8 +247,43 @@ func (s *GitHubSyncService) createMulticaIssue(ctx context.Context, config db.Gi
 		params.CreatorID = findWorkspaceOwner(ctx, s.Queries, config.WorkspaceID)
 	}
 
-	_ = ws // used for counter above
 	return s.Queries.CreateIssue(ctx, params)
+}
+
+// postGitHubComment posts a comment on a GitHub issue linking to the Multica issue.
+func (s *GitHubSyncService) postGitHubComment(ctx context.Context, config db.GithubSyncConfig, ghIssueNumber int, multicaIdentifier string) error {
+	if !config.GithubToken.Valid || config.GithubToken.String == "" {
+		slog.Debug("github sync: no token configured, skipping comment", "config_id", util.UUIDToString(config.ID))
+		return nil
+	}
+
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%d/comments",
+		config.RepoOwner, config.RepoName, ghIssueNumber)
+
+	commentBody := fmt.Sprintf(`{"body":"🤖 Multica issue created: **%s**\n\nThis issue is being tracked and will be worked on by an AI agent."}`, multicaIdentifier)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", url, strings.NewReader(commentBody))
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+config.GithubToken.String)
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.Client.Do(req)
+	if err != nil {
+		return fmt.Errorf("post github comment: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("github API error %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	slog.Info("github sync: posted comment on github issue",
+		"repo", config.RepoOwner+"/"+config.RepoName, "issue", ghIssueNumber, "multica_id", multicaIdentifier)
+	return nil
 }
 
 // findWorkspaceOwner returns the ID of the first owner member, or a zero UUID.
