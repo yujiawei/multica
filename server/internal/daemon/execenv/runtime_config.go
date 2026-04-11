@@ -199,6 +199,17 @@ func buildMetaSkillContent(provider string, ctx TaskContextForEnv) string {
 		b.WriteString("\n")
 	}
 
+	if ctx.ProjectID != "" {
+		b.WriteString("## Recording Learnings\n\n")
+		b.WriteString("When you discover something useful about this project, record it:\n")
+		fmt.Fprintf(&b, "- Build commands: `multica learning add --project-id %s --category build --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- Error patterns: `multica learning add --project-id %s --category error --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- Testing: `multica learning add --project-id %s --category test --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- Code patterns: `multica learning add --project-id %s --category pattern --content \"...\"`\n", ctx.ProjectID)
+		fmt.Fprintf(&b, "- General: `multica learning add --project-id %s --category general --content \"...\"`\n", ctx.ProjectID)
+		b.WriteString("\nKeep learnings short (1-2 sentences). Only add genuinely new insights.\n\n")
+	}
+
 	b.WriteString("## Output\n\n")
 	b.WriteString("⚠️ **Final results MUST be delivered via `multica issue comment add`.** The user does NOT see your terminal output, assistant chat text, or run logs — only comments on the issue. A task that finishes without a result comment is invisible to the user, even if the work itself was correct.\n\n")
 	b.WriteString("Keep comments concise and natural — state the outcome, not the process.\n")

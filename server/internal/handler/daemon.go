@@ -660,6 +660,7 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 
 // Inject project learnings if the issue belongs to a project.
 			if issue.ProjectID.Valid {
+				resp.ProjectID = uuidToString(issue.ProjectID)
 				if learnings, err := h.Queries.ListLearningsByProject(r.Context(), db.ListLearningsByProjectParams{
 					WorkspaceID: issue.WorkspaceID,
 					ProjectID:   issue.ProjectID,

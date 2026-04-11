@@ -1115,6 +1115,9 @@ IssueID:              task.IssueID,
 		"MULTICA_AGENT_ID":     task.AgentID,
 		"MULTICA_TASK_ID":      task.ID,
 	}
+	if task.ProjectID != "" {
+		agentEnv["MULTICA_PROJECT_ID"] = task.ProjectID
+	}
 	// Ensure the multica CLI is on PATH inside the agent's environment.
 	// Some runtimes (e.g. Codex) run in an isolated sandbox that may not
 	// inherit the daemon's PATH. Prepend the directory of the running
