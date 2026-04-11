@@ -305,6 +305,17 @@ type Project struct {
 	Priority    string             `json:"priority"`
 }
 
+type ProjectLearning struct {
+	ID           pgtype.UUID        `json:"id"`
+	WorkspaceID  pgtype.UUID        `json:"workspace_id"`
+	ProjectID    pgtype.UUID        `json:"project_id"`
+	Content      string             `json:"content"`
+	Source       pgtype.Text        `json:"source"`
+	SourceTaskID pgtype.UUID        `json:"source_task_id"`
+	Category     string             `json:"category"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
 type RuntimeUsage struct {
 	ID               pgtype.UUID        `json:"id"`
 	RuntimeID        pgtype.UUID        `json:"runtime_id"`

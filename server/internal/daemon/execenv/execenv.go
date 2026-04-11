@@ -35,6 +35,7 @@ type TaskContextForEnv struct {
 	AgentSkills       []SkillContextForEnv
 	Repos             []RepoContextForEnv // workspace repos available for checkout
 	ChatSessionID     string              // non-empty for chat tasks
+	Learnings         []string            // project learnings for prompt injection
 }
 
 // SkillContextForEnv represents a skill to be written into the execution environment.
