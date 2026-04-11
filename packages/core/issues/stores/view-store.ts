@@ -10,6 +10,7 @@ import { createWorkspaceAwareStorage, registerForWorkspaceRehydration } from "..
 import { defaultStorage } from "../../platform/storage";
 
 export type ViewMode = "board" | "list";
+export type BoardGroupBy = "status" | "pipeline";
 export type SortField = "position" | "priority" | "due_date" | "created_at" | "title";
 export type SortDirection = "asc" | "desc";
 
@@ -46,6 +47,8 @@ export const CARD_PROPERTY_OPTIONS: { key: keyof CardProperties; label: string }
 
 export interface IssueViewState {
   viewMode: ViewMode;
+  boardGroupBy: BoardGroupBy;
+  boardPipelineTemplateId: string | null;
   statusFilters: IssueStatus[];
   priorityFilters: IssuePriority[];
   assigneeFilters: ActorFilterValue[];
@@ -58,6 +61,8 @@ export interface IssueViewState {
   cardProperties: CardProperties;
   listCollapsedStatuses: IssueStatus[];
   setViewMode: (mode: ViewMode) => void;
+  setBoardGroupBy: (groupBy: BoardGroupBy) => void;
+  setBoardPipelineTemplateId: (id: string | null) => void;
   toggleStatusFilter: (status: IssueStatus) => void;
   togglePriorityFilter: (priority: IssuePriority) => void;
   toggleAssigneeFilter: (value: ActorFilterValue) => void;
@@ -76,6 +81,8 @@ export interface IssueViewState {
 
 export const viewStoreSlice = (set: StoreApi<IssueViewState>["setState"]): IssueViewState => ({
   viewMode: "board",
+  boardGroupBy: "status",
+  boardPipelineTemplateId: null,
   statusFilters: [],
   priorityFilters: [],
   assigneeFilters: [],
@@ -96,6 +103,8 @@ export const viewStoreSlice = (set: StoreApi<IssueViewState>["setState"]): Issue
   listCollapsedStatuses: [],
 
   setViewMode: (mode) => set({ viewMode: mode }),
+  setBoardGroupBy: (groupBy) => set({ boardGroupBy: groupBy }),
+  setBoardPipelineTemplateId: (id) => set({ boardPipelineTemplateId: id }),
   toggleStatusFilter: (status) =>
     set((state) => ({
       statusFilters: state.statusFilters.includes(status)
@@ -192,6 +201,8 @@ export const viewStorePersistOptions = (name: string) => ({
   storage: createJSONStorage(() => createWorkspaceAwareStorage(defaultStorage)),
   partialize: (state: IssueViewState) => ({
     viewMode: state.viewMode,
+    boardGroupBy: state.boardGroupBy,
+    boardPipelineTemplateId: state.boardPipelineTemplateId,
     statusFilters: state.statusFilters,
     priorityFilters: state.priorityFilters,
     assigneeFilters: state.assigneeFilters,

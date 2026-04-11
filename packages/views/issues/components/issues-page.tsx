@@ -16,10 +16,13 @@ import { WorkspaceAvatar } from "../../workspace/workspace-avatar";
 import { useWorkspaceId } from "@multica/core/hooks";
 import { issueListOptions, childIssueProgressOptions } from "@multica/core/issues/queries";
 import { useUpdateIssue } from "@multica/core/issues/mutations";
+import { useAdvanceIssueStage } from "@multica/core/pipelines";
+import { pipelineTemplateListOptions } from "@multica/core/pipelines";
 import { useIssueSelectionStore } from "@multica/core/issues/stores/selection-store";
 import { PageHeader } from "../../layout/page-header";
 import { IssuesHeader } from "./issues-header";
 import { BoardView } from "./board-view";
+import { PipelineBoardView } from "./pipeline-board";
 import { ListView } from "./list-view";
 import { BatchActionToolbar } from "./batch-action-toolbar";
 
@@ -30,6 +33,8 @@ export function IssuesPage() {
   const workspace = useCurrentWorkspace();
   const scope = useIssuesScopeStore((s) => s.scope);
   const viewMode = useIssueViewStore((s) => s.viewMode);
+  const boardGroupBy = useIssueViewStore((s) => s.boardGroupBy);
+  const boardPipelineTemplateId = useIssueViewStore((s) => s.boardPipelineTemplateId);
   const statusFilters = useIssueViewStore((s) => s.statusFilters);
   const priorityFilters = useIssueViewStore((s) => s.priorityFilters);
   const assigneeFilters = useIssueViewStore((s) => s.assigneeFilters);
@@ -73,7 +78,77 @@ export function IssuesPage() {
     return BOARD_STATUSES.filter((s) => !visibleStatuses.includes(s));
   }, [visibleStatuses]);
 
+  // Pipeline templates for pipeline board view
+  const { data: pipelineTemplates = [] } = useQuery(pipelineTemplateListOptions(wsId));
+
+  // Auto-select pipeline template if not set or invalid
+  const activePipelineTemplate = useMemo(() => {
+    if (pipelineTemplates.length === 0) return null;
+    const selected = pipelineTemplates.find((t) => t.id === boardPipelineTemplateId);
+    if (selected) return selected;
+    // Auto-select: prefer the template most issues are using
+    const countByTemplate = new Map<string, number>();
+    for (const issue of allIssues) {
+      if (issue.pipeline_template_id) {
+        countByTemplate.set(
+          issue.pipeline_template_id,
+          (countByTemplate.get(issue.pipeline_template_id) ?? 0) + 1,
+        );
+      }
+    }
+    let best = pipelineTemplates[0]!;
+    let bestCount = 0;
+    for (const t of pipelineTemplates) {
+      const c = countByTemplate.get(t.id) ?? 0;
+      if (c > bestCount) {
+        best = t;
+        bestCount = c;
+      }
+    }
+    return best;
+  }, [pipelineTemplates, boardPipelineTemplateId, allIssues]);
+
+  // Auto-persist the selected template ID
+  useEffect(() => {
+    if (activePipelineTemplate && activePipelineTemplate.id !== boardPipelineTemplateId) {
+      useIssueViewStore.getState().setBoardPipelineTemplateId(activePipelineTemplate.id);
+    }
+  }, [activePipelineTemplate, boardPipelineTemplateId]);
+
+  const advanceStageMutation = useAdvanceIssueStage();
   const updateIssueMutation = useUpdateIssue();
+
+  const handleAdvanceToStage = useCallback(
+    (issueId: string, targetStage: string, newPosition?: number) => {
+      const UNASSIGNED = "__pipeline_unassigned__";
+      if (targetStage === UNASSIGNED) {
+        // Cannot move issues out of a pipeline via drag
+        return;
+      }
+
+      const issue = allIssues.find((i) => i.id === issueId);
+      if (!issue) return;
+
+      // If the issue is already at this stage, just reorder
+      if (issue.current_stage === targetStage) {
+        if (newPosition !== undefined) {
+          updateIssueMutation.mutate(
+            { id: issueId, position: newPosition },
+            { onError: () => toast.error("Failed to move issue") },
+          );
+        }
+        return;
+      }
+
+      // Use advanceIssueStage API to move to the target stage
+      advanceStageMutation.mutate(
+        { issueId },
+        { onError: () => toast.error("Failed to advance stage") },
+      );
+    },
+    [allIssues, advanceStageMutation, updateIssueMutation],
+  );
+
   const handleMoveIssue = useCallback(
     (issueId: string, newStatus: IssueStatus, newPosition?: number) => {
       // Auto-switch to manual sort so drag ordering is preserved
