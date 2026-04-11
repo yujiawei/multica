@@ -40,9 +40,11 @@ import { webhookListOptions, workspaceKeys } from "@multica/core/workspace/queri
 import { api } from "@multica/core/api";
 
 const AVAILABLE_EVENTS = [
+  { value: "issue.created", label: "Issue Created" },
+  { value: "issue.assigned", label: "Issue Assigned" },
+  { value: "issue.status_changed", label: "Issue Status Changed" },
   { value: "task.completed", label: "Task Completed" },
   { value: "task.failed", label: "Task Failed" },
-  { value: "issue.status_changed", label: "Issue Status Changed" },
 ] as const;
 
 function WebhookForm({

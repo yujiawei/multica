@@ -961,6 +961,7 @@ func (h *Handler) CreateIssue(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("issue created", append(logger.RequestAttrs(r), "issue_id", uuidToString(issue.ID), "title", issue.Title, "status", issue.Status, "workspace_id", workspaceID)...)
 	h.publish(protocol.EventIssueCreated, workspaceID, creatorType, actualCreatorID, map[string]any{"issue": resp})
+	h.sendIssueWebhook(r.Context(), issue, "issue.created")
 
 	// Enqueue agent task when an agent-assigned issue is created.
 	if issue.AssigneeType.Valid && issue.AssigneeID.Valid {
@@ -1568,6 +1569,26 @@ func (h *Handler) sendIssueStatusWebhook(ctx context.Context, issue db.Issue, pr
 	identifier := prefix + "-" + strconv.Itoa(int(issue.Number))
 
 	h.WebhookService.SendEvent(ctx, issue.WorkspaceID, "issue.status_changed", service.WebhookPayload{
+		Workspace: service.WebhookWS{ID: uuidToString(ws.ID), Name: ws.Name},
+		Issue:     &service.WebhookIssue{ID: uuidToString(issue.ID), Identifier: identifier, Title: issue.Title, Status: issue.Status},
+	})
+}
+
+// sendIssueWebhook sends a webhook notification for a generic issue event.
+func (h *Handler) sendIssueWebhook(ctx context.Context, issue db.Issue, event string) {
+	if h.WebhookService == nil {
+		return
+	}
+
+	ws, err := h.Queries.GetWorkspace(ctx, issue.WorkspaceID)
+	if err != nil {
+		return
+	}
+
+	prefix := ws.IssuePrefix
+	identifier := prefix + "-" + strconv.Itoa(int(issue.Number))
+
+	h.WebhookService.SendEvent(ctx, issue.WorkspaceID, event, service.WebhookPayload{
 		Workspace: service.WebhookWS{ID: uuidToString(ws.ID), Name: ws.Name},
 		Issue:     &service.WebhookIssue{ID: uuidToString(issue.ID), Identifier: identifier, Title: issue.Title, Status: issue.Status},
 	})
