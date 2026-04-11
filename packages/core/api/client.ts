@@ -50,17 +50,17 @@ import type {
   CreatePinRequest,
   PinnedItemType,
   ReorderPinsRequest,
-ProjectLearning,
+  ProjectLearning,
   CreateProjectLearningRequest,
   ListProjectLearningsResponse,
-Webhook,
+  Webhook,
   CreateWebhookRequest,
   UpdateWebhookRequest,
-GitHubSyncConfig,
+  GitHubSyncConfig,
   CreateGitHubSyncConfigRequest,
   UpdateGitHubSyncConfigRequest,
   TriggerGitHubSyncResponse,
-PipelineTemplate,
+  PipelineTemplate,
   CreatePipelineTemplateRequest,
   UpdatePipelineTemplateRequest,
   ListPipelineTemplatesResponse,
@@ -722,7 +722,7 @@ export class ApiClient {
     await this.fetch(`/api/projects/${id}`, { method: "DELETE" });
   }
 
-// Project Learnings
+  // Project Learnings
   async listProjectLearnings(projectId: string, params?: { category?: string }): Promise<ListProjectLearningsResponse> {
     const search = new URLSearchParams();
     if (params?.category) search.set("category", params.category);
@@ -731,7 +731,16 @@ export class ApiClient {
 
   async createProjectLearning(projectId: string, data: CreateProjectLearningRequest): Promise<ProjectLearning> {
     return this.fetch(`/api/projects/${projectId}/learnings`, {
-// Pipeline Templates
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProjectLearning(learningId: string): Promise<void> {
+    await this.fetch(`/api/learnings/${learningId}`, { method: "DELETE" });
+  }
+
+  // Pipeline Templates
   async listPipelineTemplates(): Promise<ListPipelineTemplatesResponse> {
     return this.fetch("/api/pipeline-templates");
   }
@@ -749,9 +758,7 @@ export class ApiClient {
     });
   }
 
-async deleteProjectLearning(learningId: string): Promise<void> {
-    await this.fetch(`/api/learnings/${learningId}`, { method: "DELETE" });
-async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): Promise<PipelineTemplate> {
+  async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): Promise<PipelineTemplate> {
     return this.fetch(`/api/pipeline-templates/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
@@ -796,14 +803,14 @@ async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): P
     });
   }
 
-// Webhooks
+  // Webhooks
   async listWebhooks(): Promise<Webhook[]> {
     return this.fetch("/api/webhooks");
   }
 
   async createWebhook(data: CreateWebhookRequest): Promise<Webhook> {
     return this.fetch("/api/webhooks", {
-// GitHub Sync
+  // GitHub Sync
   async listGitHubSyncConfigs(): Promise<GitHubSyncConfig[]> {
     return this.fetch("/api/github-sync");
   }

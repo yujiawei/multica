@@ -1,8 +1,6 @@
 "use client";
 
-import { User, Palette, Key, Settings, Users, FolderGit2, Webhook } from "lucide-react";
-import { User, Palette, Key, Settings, Users, FolderGit2, GitBranch } from "lucide-react";
-import { User, Palette, Key, Settings, Users, FolderGit2, Workflow } from "lucide-react";
+import { User, Palette, Key, Settings, Users, FolderGit2, Webhook, GitBranch, Workflow } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@multica/ui/components/ui/tabs";
 import { useWorkspaceStore } from "@multica/core/workspace";
 import { AccountTab } from "./account-tab";

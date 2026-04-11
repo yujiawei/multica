@@ -52,6 +52,9 @@ export function webhookListOptions(wsId: string) {
   return queryOptions({
     queryKey: workspaceKeys.webhooks(wsId),
     queryFn: () => api.listWebhooks(),
+  });
+}
+
 export function githubSyncListOptions(wsId: string) {
   return queryOptions({
     queryKey: workspaceKeys.githubSync(wsId),
