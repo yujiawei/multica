@@ -14,6 +14,7 @@ export interface CreateIssueRequest {
   project_id?: string;
   due_date?: string;
   attachment_ids?: string[];
+  pipeline_template_id?: string;
 }
 
 export interface UpdateIssueRequest {

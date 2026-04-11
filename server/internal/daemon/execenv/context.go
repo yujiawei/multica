@@ -147,6 +147,15 @@ func renderIssueContext(provider string, ctx TaskContextForEnv) string {
 	b.WriteString("## Quick Start\n\n")
 	fmt.Fprintf(&b, "Run `multica issue get %s --output json` to fetch the full issue details.\n\n", ctx.IssueID)
 
+	if ctx.PipelineStage != "" {
+		b.WriteString("## Pipeline Stage\n\n")
+		fmt.Fprintf(&b, "**Current Stage:** %s\n\n", ctx.PipelineStage)
+		if ctx.PipelineInstructions != "" {
+			fmt.Fprintf(&b, "**Stage Instructions:** %s\n\n", ctx.PipelineInstructions)
+		}
+		b.WriteString("When this stage is complete, call `multica issue advance-stage` to proceed to the next stage.\n\n")
+	}
+
 	if len(ctx.AgentSkills) > 0 {
 		b.WriteString("## Agent Skills\n\n")
 		b.WriteString("The following skills are available to you:\n\n")

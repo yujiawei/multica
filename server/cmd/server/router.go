@@ -258,6 +258,8 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analytics
 					r.Delete("/reactions", h.RemoveIssueReaction)
 					r.Get("/attachments", h.ListAttachments)
 					r.Get("/children", h.ListChildIssues)
+					r.Get("/pipeline-status", h.GetIssuePipelineStatus)
+					r.Post("/advance-stage", h.AdvanceIssueStage)
 				})
 			})
 
@@ -298,6 +300,16 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analytics
 			// Learnings
 			r.Get("/api/learnings/inject", h.GetLearningsForInjection)
 			r.Delete("/api/learnings/{learningId}", h.DeleteProjectLearning)
+// Pipeline Templates
+			r.Route("/api/pipeline-templates", func(r chi.Router) {
+				r.Get("/", h.ListPipelineTemplates)
+				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreatePipelineTemplate)
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", h.GetPipelineTemplate)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdatePipelineTemplate)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeletePipelineTemplate)
+				})
+			})
 
 			// Pins
 			r.Route("/api/pins", func(r chi.Router) {

@@ -4,6 +4,7 @@ import React from "react";
 import { User, Palette, Key, Settings, Users, FolderGit2 } from "lucide-react";
 import { User, Palette, Key, Settings, Users, FolderGit2, Webhook } from "lucide-react";
 import { User, Palette, Key, Settings, Users, FolderGit2, GitBranch } from "lucide-react";
+import { User, Palette, Key, Settings, Users, FolderGit2, Workflow } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@multica/ui/components/ui/tabs";
 import { useCurrentWorkspace } from "@multica/core/paths";
 import { AccountTab } from "./account-tab";
@@ -14,6 +15,7 @@ import { MembersTab } from "./members-tab";
 import { RepositoriesTab } from "./repositories-tab";
 import { WebhooksTab } from "./webhooks-tab";
 import { GitHubSyncTab } from "./github-sync-tab";
+import { PipelinesTab } from "./pipelines-tab";
 
 const accountTabs = [
   { value: "profile", label: "Profile", icon: User },
@@ -26,7 +28,8 @@ const workspaceTabs = [
   { value: "repositories", label: "Repositories", icon: FolderGit2 },
   { value: "github-sync", label: "GitHub Sync", icon: GitBranch },
   { value: "members", label: "Members", icon: Users },
-  { value: "webhooks", label: "Webhooks", icon: Webhook },
+{ value: "webhooks", label: "Webhooks", icon: Webhook },
+{ value: "pipelines", label: "Pipelines", icon: Workflow },
 ];
 
 export interface ExtraSettingsTab {

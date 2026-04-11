@@ -21,6 +21,14 @@ import (
 	"github.com/multica-ai/multica/server/pkg/protocol"
 )
 
+// normalizeStageResults returns stage_results as json.RawMessage, or nil if empty/null.
+func normalizeStageResults(b []byte) json.RawMessage {
+	if len(b) == 0 || string(b) == "null" || string(b) == "{}" {
+		return nil
+	}
+	return json.RawMessage(b)
+}
+
 // IssueResponse is the JSON response for an issue.
 type IssueResponse struct {
 	ID                 string                  `json:"id"`
@@ -41,32 +49,39 @@ type IssueResponse struct {
 	DueDate            *string                 `json:"due_date"`
 	CreatedAt          string                  `json:"created_at"`
 	UpdatedAt          string                  `json:"updated_at"`
+	PipelineTemplateID *string                 `json:"pipeline_template_id"`
+	CurrentStage       *string                 `json:"current_stage"`
+	StageResults       json.RawMessage         `json:"stage_results,omitempty"`
 	Reactions          []IssueReactionResponse `json:"reactions,omitempty"`
 	Attachments        []AttachmentResponse    `json:"attachments,omitempty"`
 }
 
 func issueToResponse(i db.Issue, issuePrefix string) IssueResponse {
 	identifier := issuePrefix + "-" + strconv.Itoa(int(i.Number))
-	return IssueResponse{
-		ID:            uuidToString(i.ID),
-		WorkspaceID:   uuidToString(i.WorkspaceID),
-		Number:        i.Number,
-		Identifier:    identifier,
-		Title:         i.Title,
-		Description:   textToPtr(i.Description),
-		Status:        i.Status,
-		Priority:      i.Priority,
-		AssigneeType:  textToPtr(i.AssigneeType),
-		AssigneeID:    uuidToPtr(i.AssigneeID),
-		CreatorType:   i.CreatorType,
-		CreatorID:     uuidToString(i.CreatorID),
-		ParentIssueID: uuidToPtr(i.ParentIssueID),
-		ProjectID:     uuidToPtr(i.ProjectID),
-		Position:      i.Position,
-		DueDate:       timestampToPtr(i.DueDate),
-		CreatedAt:     timestampToString(i.CreatedAt),
-		UpdatedAt:     timestampToString(i.UpdatedAt),
+	resp := IssueResponse{
+		ID:                 uuidToString(i.ID),
+		WorkspaceID:        uuidToString(i.WorkspaceID),
+		Number:             i.Number,
+		Identifier:         identifier,
+		Title:              i.Title,
+		Description:        textToPtr(i.Description),
+		Status:             i.Status,
+		Priority:           i.Priority,
+		AssigneeType:       textToPtr(i.AssigneeType),
+		AssigneeID:         uuidToPtr(i.AssigneeID),
+		CreatorType:        i.CreatorType,
+		CreatorID:          uuidToString(i.CreatorID),
+		ParentIssueID:      uuidToPtr(i.ParentIssueID),
+		ProjectID:          uuidToPtr(i.ProjectID),
+		Position:           i.Position,
+		DueDate:            timestampToPtr(i.DueDate),
+		CreatedAt:          timestampToString(i.CreatedAt),
+		UpdatedAt:          timestampToString(i.UpdatedAt),
+		PipelineTemplateID: uuidToPtr(i.PipelineTemplateID),
+		CurrentStage:       textToPtr(i.CurrentStage),
+		StageResults:       normalizeStageResults(i.StageResults),
 	}
+	return resp
 }
 
 // issueListRowToResponse converts a list-query row (no description) to an IssueResponse.
@@ -769,6 +784,7 @@ type CreateIssueRequest struct {
 	ProjectID          *string  `json:"project_id"`
 	DueDate            *string  `json:"due_date"`
 	AttachmentIDs      []string `json:"attachment_ids,omitempty"`
+	PipelineTemplateID *string  `json:"pipeline_template_id"`
 }
 
 func (h *Handler) CreateIssue(w http.ResponseWriter, r *http.Request) {
@@ -898,6 +914,32 @@ func (h *Handler) CreateIssue(w http.ResponseWriter, r *http.Request) {
 	// Link any pre-uploaded attachments to this issue.
 	if len(req.AttachmentIDs) > 0 {
 		h.linkAttachmentsByIssueIDs(r.Context(), issue.ID, issue.WorkspaceID, req.AttachmentIDs)
+	}
+
+	// Initialize pipeline if a template was selected.
+	if req.PipelineTemplateID != nil {
+		tmplID := parseUUID(*req.PipelineTemplateID)
+		tmpl, err := h.Queries.GetPipelineTemplateInWorkspace(r.Context(), db.GetPipelineTemplateInWorkspaceParams{
+			ID:          tmplID,
+			WorkspaceID: parseUUID(workspaceID),
+		})
+		if err == nil {
+			var stages []PipelineStage
+			if json.Unmarshal(tmpl.Stages, &stages) == nil && len(stages) > 0 {
+				firstStage := stages[0].Name
+				initialResults, _ := json.Marshal(map[string]any{
+					firstStage: map[string]any{
+						"started_at": time.Now().UTC().Format(time.RFC3339),
+					},
+				})
+				issue, _ = h.Queries.UpdateIssuePipeline(r.Context(), db.UpdateIssuePipelineParams{
+					ID:                 issue.ID,
+					PipelineTemplateID: tmplID,
+					CurrentStage:       pgtype.Text{String: firstStage, Valid: true},
+					StageResults:       initialResults,
+				})
+			}
+		}
 	}
 
 	prefix := h.getIssuePrefix(r.Context(), issue.WorkspaceID)

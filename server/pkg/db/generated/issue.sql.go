@@ -455,7 +455,8 @@ func (q *Queries) ListChildIssues(ctx context.Context, parentIssueID pgtype.UUID
 const listIssues = `-- name: ListIssues :many
 SELECT id, workspace_id, title, description, status, priority,
        assignee_type, assignee_id, creator_type, creator_id,
-       parent_issue_id, position, due_date, created_at, updated_at, number, project_id
+       parent_issue_id, position, due_date, created_at, updated_at, number, project_id,
+       pipeline_template_id, current_stage, stage_results
 FROM issue
 WHERE workspace_id = $1
   AND ($4::text IS NULL OR status = $4)
@@ -537,6 +538,9 @@ func (q *Queries) ListIssues(ctx context.Context, arg ListIssuesParams) ([]ListI
 			&i.UpdatedAt,
 			&i.Number,
 			&i.ProjectID,
+			&i.PipelineTemplateID,
+			&i.CurrentStage,
+			&i.StageResults,
 		); err != nil {
 			return nil, err
 		}
@@ -551,7 +555,8 @@ func (q *Queries) ListIssues(ctx context.Context, arg ListIssuesParams) ([]ListI
 const listOpenIssues = `-- name: ListOpenIssues :many
 SELECT id, workspace_id, title, description, status, priority,
        assignee_type, assignee_id, creator_type, creator_id,
-       parent_issue_id, position, due_date, created_at, updated_at, number, project_id
+       parent_issue_id, position, due_date, created_at, updated_at, number, project_id,
+       pipeline_template_id, current_stage, stage_results
 FROM issue
 WHERE workspace_id = $1
   AND status NOT IN ('done', 'cancelled')
@@ -626,6 +631,9 @@ func (q *Queries) ListOpenIssues(ctx context.Context, arg ListOpenIssuesParams) 
 			&i.UpdatedAt,
 			&i.Number,
 			&i.ProjectID,
+			&i.PipelineTemplateID,
+			&i.CurrentStage,
+			&i.StageResults,
 		); err != nil {
 			return nil, err
 		}

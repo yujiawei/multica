@@ -91,6 +91,7 @@ import { useCreatePin, useDeletePin } from "@multica/core/pins";
 import { projectLearningsOptions } from "@multica/core/learnings/queries";
 
 import { ProgressRing } from "./progress-ring";
+import { PipelineTimeline } from "./pipeline-timeline";
 
 function LearningsCount({ projectId }: { projectId: string }) {
   const wsId = useWorkspaceId();

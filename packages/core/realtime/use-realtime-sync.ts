@@ -122,6 +122,10 @@ export function useRealtimeSync(
         const userId = authStore.getState().user?.id;
         if (wsId && userId) qc.invalidateQueries({ queryKey: pinKeys.all(wsId, userId) });
       },
+      pipeline_template: () => {
+        const wsId = workspaceStore.getState().workspace?.id;
+        if (wsId) qc.invalidateQueries({ queryKey: pipelineKeys.all(wsId) });
+      },
       daemon: () => {
         const wsId = getCurrentWsId();
         if (wsId) qc.invalidateQueries({ queryKey: runtimeKeys.all(wsId) });
@@ -508,6 +512,7 @@ export function useRealtimeSync(
           qc.invalidateQueries({ queryKey: workspaceKeys.members(wsId) });
           qc.invalidateQueries({ queryKey: workspaceKeys.skills(wsId) });
           qc.invalidateQueries({ queryKey: projectKeys.all(wsId) });
+          qc.invalidateQueries({ queryKey: pipelineKeys.all(wsId) });
           qc.invalidateQueries({ queryKey: runtimeKeys.all(wsId) });
           qc.invalidateQueries({ queryKey: autopilotKeys.all(wsId) });
         }

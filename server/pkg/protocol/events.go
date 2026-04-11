@@ -90,6 +90,11 @@ const (
 	EventAutopilotRunStart = "autopilot:run_start"
 	EventAutopilotRunDone  = "autopilot:run_done"
 
+	// Pipeline events
+	EventPipelineTemplateCreated = "pipeline_template:created"
+	EventPipelineTemplateUpdated = "pipeline_template:updated"
+	EventPipelineTemplateDeleted = "pipeline_template:deleted"
+
 	// Daemon events
 	EventDaemonHeartbeat = "daemon:heartbeat"
 	EventDaemonRegister  = "daemon:register"

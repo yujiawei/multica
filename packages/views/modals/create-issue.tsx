@@ -52,6 +52,7 @@ export function CreateIssueModal({ onClose, data }: { onClose: () => void; data?
   const [projectId, setProjectId] = useState<string | undefined>(
     (data?.project_id as string) || undefined,
   );
+  const [pipelineTemplateId, setPipelineTemplateId] = useState<string | undefined>(undefined);
   const [isExpanded, setIsExpanded] = useState(false);
   const [backlogHintIssueId, setBacklogHintIssueId] = useState<string | null>(null);
 
@@ -93,6 +94,7 @@ export function CreateIssueModal({ onClose, data }: { onClose: () => void; data?
         attachment_ids: attachmentIds.length > 0 ? attachmentIds : undefined,
         parent_issue_id: (data?.parent_issue_id as string) || undefined,
         project_id: projectId,
+        pipeline_template_id: pipelineTemplateId,
       });
       clearDraft();
       const shouldShowBacklogHint =

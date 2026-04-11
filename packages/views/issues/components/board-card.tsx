@@ -20,6 +20,7 @@ import { PRIORITY_CONFIG } from "@multica/core/issues/config";
 import { useViewStore } from "@multica/core/issues/stores/view-store-context";
 import { ProgressRing } from "./progress-ring";
 import type { ChildProgress } from "./list-row";
+import { PipelineProgress } from "./pipeline-progress";
 
 function formatDate(date: string): string {
   return new Date(date).toLocaleDateString("en-US", {
@@ -105,6 +106,14 @@ export const BoardCardContent = memo(function BoardCardContent({
             </span>
           )}
         </div>
+      )}
+
+      {/* Pipeline stage progress */}
+      {issue.pipeline_template_id && issue.current_stage && issue.stage_results && (
+        <PipelineProgress
+          currentStage={issue.current_stage}
+          stageResults={issue.stage_results}
+        />
       )}
 
       {/* Description */}
