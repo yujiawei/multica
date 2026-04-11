@@ -290,6 +290,17 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus) chi.Route
 				})
 			})
 
+			// Webhooks
+			r.Route("/api/webhooks", func(r chi.Router) {
+				r.Get("/", h.ListWebhooks)
+				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreateWebhook)
+				r.Route("/{id}", func(r chi.Router) {
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdateWebhook)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeleteWebhook)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/test", h.TestWebhook)
+				})
+			})
+
 			// Inbox
 			r.Route("/api/inbox", func(r chi.Router) {
 				r.Get("/", h.ListInbox)
