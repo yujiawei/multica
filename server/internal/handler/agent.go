@@ -88,14 +88,12 @@ type AgentTaskResponse struct {
 	Agent          *TaskAgentData `json:"agent,omitempty"`
 	Repos          []RepoData     `json:"repos,omitempty"`
 	CreatedAt      string         `json:"created_at"`
-	PriorSessionID   string         `json:"prior_session_id,omitempty"`    // session ID from a previous task on same issue
-	PriorWorkDir     string         `json:"prior_work_dir,omitempty"`     // work_dir from a previous task on same issue
-	TriggerCommentID *string        `json:"trigger_comment_id,omitempty"` // comment that triggered this task
-ChatSessionID    string         `json:"chat_session_id,omitempty"`    // non-empty for chat tasks
-	ChatMessage      string         `json:"chat_message,omitempty"`       // user message for chat tasks
-	Learnings        []string       `json:"learnings,omitempty"`          // project learnings for prompt injection
-ChatSessionID        string         `json:"chat_session_id,omitempty"`    // non-empty for chat tasks
-	ChatMessage          string         `json:"chat_message,omitempty"`       // user message for chat tasks
+	PriorSessionID       string         `json:"prior_session_id,omitempty"`      // session ID from a previous task on same issue
+	PriorWorkDir         string         `json:"prior_work_dir,omitempty"`        // work_dir from a previous task on same issue
+	TriggerCommentID     *string        `json:"trigger_comment_id,omitempty"`    // comment that triggered this task
+	ChatSessionID        string         `json:"chat_session_id,omitempty"`       // non-empty for chat tasks
+	ChatMessage          string         `json:"chat_message,omitempty"`          // user message for chat tasks
+	Learnings            []string       `json:"learnings,omitempty"`             // project learnings for prompt injection
 	PipelineStage        string         `json:"pipeline_stage,omitempty"`        // current pipeline stage name
 	PipelineInstructions string         `json:"pipeline_instructions,omitempty"` // instructions for current stage
 }
