@@ -344,6 +344,17 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analytics
 				})
 			})
 
+			// GitHub Sync
+			r.Route("/api/github-sync", func(r chi.Router) {
+				r.Get("/", h.ListGitHubSyncConfigs)
+				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreateGitHubSyncConfig)
+				r.Route("/{id}", func(r chi.Router) {
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdateGitHubSyncConfig)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeleteGitHubSyncConfig)
+					r.Post("/sync", h.TriggerGitHubSync)
+				})
+			})
+
 			// Usage
 			r.Route("/api/usage", func(r chi.Router) {
 				r.Get("/daily", h.GetWorkspaceUsageByDay)

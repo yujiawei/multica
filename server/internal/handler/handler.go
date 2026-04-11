@@ -48,6 +48,7 @@ type Handler struct {
 	AutopilotService      *service.AutopilotService
 	EmailService          *service.EmailService
 	WebhookService        *service.WebhookService
+	GitHubSyncService     *service.GitHubSyncService
 	PingStore             *PingStore
 	UpdateStore           *UpdateStore
 	ModelListStore        *ModelListStore

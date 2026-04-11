@@ -70,6 +70,9 @@ func main() {
 	registerActivityListeners(bus, queries)
 	registerNotificationListeners(bus, queries)
 
+	ghSync := service.NewGitHubSyncService(queries, hub, bus)
+	registerGitHubSyncListeners(bus, ghSync)
+
 	r := NewRouter(pool, hub, bus, analyticsClient)
 
 	srv := &http.Server{
@@ -89,6 +92,10 @@ func main() {
 	go runAutopilotScheduler(autopilotCtx, queries, autopilotSvc)
 	go runDBStatsLogger(sweepCtx, pool)
 
+	// Start GitHub issue sync poller (every 5 minutes).
+	ghSyncCtx, ghSyncCancel := context.WithCancel(context.Background())
+	go ghSync.RunPoller(ghSyncCtx, 5*time.Minute)
+
 	// Graceful shutdown
 	go func() {
 		slog.Info("server starting", "port", port)
@@ -105,6 +112,7 @@ func main() {
 	slog.Info("shutting down server")
 	sweepCancel()
 	autopilotCancel()
+	ghSyncCancel()
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
