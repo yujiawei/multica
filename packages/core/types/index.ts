@@ -62,3 +62,5 @@ export type {
   GetAutopilotResponse,
   ListAutopilotRunsResponse,
 } from "./autopilot";
+
+export type { ProjectLearning, CreateLearningRequest } from "./learning";

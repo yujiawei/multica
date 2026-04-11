@@ -273,6 +273,8 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analytics
 					r.Get("/", h.GetProject)
 					r.Put("/", h.UpdateProject)
 					r.Delete("/", h.DeleteProject)
+					r.Get("/learnings", h.ListProjectLearnings)
+					r.Post("/learnings", h.CreateProjectLearning)
 				})
 			})
 
@@ -293,6 +295,9 @@ func NewRouter(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus, analytics
 					})
 				})
 			})
+			// Learnings
+			r.Get("/api/learnings/inject", h.GetLearningsForInjection)
+			r.Delete("/api/learnings/{learningId}", h.DeleteProjectLearning)
 
 			// Pins
 			r.Route("/api/pins", func(r chi.Router) {

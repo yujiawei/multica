@@ -68,6 +68,10 @@ const (
 	EventProjectUpdated = "project:updated"
 	EventProjectDeleted = "project:deleted"
 
+	// Learning events
+	EventLearningCreated = "learning:created"
+	EventLearningDeleted = "learning:deleted"
+
 	// Pin events
 	EventPinCreated   = "pin:created"
 	EventPinDeleted   = "pin:deleted"

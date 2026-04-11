@@ -88,8 +88,26 @@ import { timeAgo } from "@multica/core/utils";
 import { cn } from "@multica/ui/lib/utils";
 import { pinListOptions } from "@multica/core/pins";
 import { useCreatePin, useDeletePin } from "@multica/core/pins";
+import { projectLearningsOptions } from "@multica/core/learnings/queries";
 
 import { ProgressRing } from "./progress-ring";
+
+function LearningsCount({ projectId }: { projectId: string }) {
+  const wsId = useWorkspaceId();
+  const { data: learnings = [] } = useQuery(projectLearningsOptions(wsId, projectId));
+  if (learnings.length === 0) return null;
+  return (
+    <div className="flex min-h-8 items-center gap-2 rounded-md px-2 -mx-2">
+      <span className="w-24 shrink-0 text-xs text-muted-foreground">Learnings</span>
+      <AppLink
+        href={`/projects/${projectId}`}
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {learnings.length} learning{learnings.length !== 1 ? "s" : ""}
+      </AppLink>
+    </div>
+  );
+}
 
 function shortDate(date: string | null): string {
   if (!date) return "—";

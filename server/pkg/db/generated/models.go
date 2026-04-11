@@ -369,6 +369,31 @@ type Project struct {
 	Priority    string             `json:"priority"`
 }
 
+type ProjectLearning struct {
+	ID           pgtype.UUID        `json:"id"`
+	WorkspaceID  pgtype.UUID        `json:"workspace_id"`
+	ProjectID    pgtype.UUID        `json:"project_id"`
+	Content      string             `json:"content"`
+	Source       pgtype.Text        `json:"source"`
+	SourceTaskID pgtype.UUID        `json:"source_task_id"`
+	Category     string             `json:"category"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type RuntimeUsage struct {
+	ID               pgtype.UUID        `json:"id"`
+	RuntimeID        pgtype.UUID        `json:"runtime_id"`
+	Date             pgtype.Date        `json:"date"`
+	Provider         string             `json:"provider"`
+	Model            string             `json:"model"`
+	InputTokens      int64              `json:"input_tokens"`
+	OutputTokens     int64              `json:"output_tokens"`
+	CacheReadTokens  int64              `json:"cache_read_tokens"`
+	CacheWriteTokens int64              `json:"cache_write_tokens"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Skill struct {
 	ID          pgtype.UUID        `json:"id"`
 	WorkspaceID pgtype.UUID        `json:"workspace_id"`

@@ -976,6 +976,24 @@ export class ApiClient {
     await this.fetch(`/api/projects/${id}`, { method: "DELETE" });
   }
 
+  // Project Learnings
+  async listProjectLearnings(projectId: string, params?: { category?: string }): Promise<ListProjectLearningsResponse> {
+    const search = new URLSearchParams();
+    if (params?.category) search.set("category", params.category);
+    return this.fetch(`/api/projects/${projectId}/learnings?${search}`);
+  }
+
+  async createProjectLearning(projectId: string, data: CreateProjectLearningRequest): Promise<ProjectLearning> {
+    return this.fetch(`/api/projects/${projectId}/learnings`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProjectLearning(learningId: string): Promise<void> {
+    await this.fetch(`/api/learnings/${learningId}`, { method: "DELETE" });
+  }
+
   // Pins
   async listPins(): Promise<PinnedItem[]> {
     return this.fetch("/api/pins");
