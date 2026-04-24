@@ -1,0 +1,9 @@
+# Default owner
+* @yujiawei
+
+# Server (Go backend)
+/server/ @yujiawei
+
+# Frontend
+/apps/ @yujiawei
+/packages/ @yujiawei
