@@ -63,4 +63,6 @@ export type {
   ListAutopilotRunsResponse,
 } from "./autopilot";
 
-export type { ProjectLearning, CreateLearningRequest } from "./learning";
+export type { ProjectLearning, CreateProjectLearningRequest, ListProjectLearningsResponse, LearningCategory } from "./learning";
+export type { GitHubSyncConfig, CreateGitHubSyncConfigRequest, UpdateGitHubSyncConfigRequest, TriggerGitHubSyncResponse } from "./github-sync";
+export type { Webhook, CreateWebhookRequest, UpdateWebhookRequest } from "./webhook";

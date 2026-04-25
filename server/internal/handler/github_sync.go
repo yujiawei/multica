@@ -41,7 +41,7 @@ func syncConfigToResponse(c db.GithubSyncConfig) GitHubSyncConfigResponse {
 
 // ListGitHubSyncConfigs lists all sync configs for the workspace.
 func (h *Handler) ListGitHubSyncConfigs(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	if workspaceID == "" {
 		writeError(w, http.StatusBadRequest, "workspace_id is required")
 		return
@@ -62,7 +62,7 @@ func (h *Handler) ListGitHubSyncConfigs(w http.ResponseWriter, r *http.Request) 
 
 // CreateGitHubSyncConfig creates a new sync config.
 func (h *Handler) CreateGitHubSyncConfig(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	if workspaceID == "" {
 		writeError(w, http.StatusBadRequest, "workspace_id is required")
 		return
@@ -120,7 +120,7 @@ func (h *Handler) CreateGitHubSyncConfig(w http.ResponseWriter, r *http.Request)
 
 // UpdateGitHubSyncConfig updates an existing sync config.
 func (h *Handler) UpdateGitHubSyncConfig(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	configID := chi.URLParam(r, "id")
 
 	var req struct {
@@ -166,7 +166,7 @@ func (h *Handler) UpdateGitHubSyncConfig(w http.ResponseWriter, r *http.Request)
 
 // DeleteGitHubSyncConfig deletes a sync config.
 func (h *Handler) DeleteGitHubSyncConfig(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	configID := chi.URLParam(r, "id")
 
 	err := h.Queries.DeleteGitHubSyncConfig(r.Context(), db.DeleteGitHubSyncConfigParams{
@@ -183,7 +183,7 @@ func (h *Handler) DeleteGitHubSyncConfig(w http.ResponseWriter, r *http.Request)
 
 // TriggerGitHubSync manually triggers a sync for a specific config.
 func (h *Handler) TriggerGitHubSync(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	configID := chi.URLParam(r, "id")
 
 	config, err := h.Queries.GetGitHubSyncConfigInWorkspace(r.Context(), db.GetGitHubSyncConfigInWorkspaceParams{

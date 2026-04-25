@@ -14,6 +14,7 @@ import { projectKeys } from "../projects/queries";
 import { pinKeys } from "../pins/queries";
 import { autopilotKeys } from "../autopilots/queries";
 import { runtimeKeys } from "../runtimes/queries";
+import { pipelineKeys } from "../pipelines/queries";
 import {
   onIssueCreated,
   onIssueUpdated,
@@ -123,7 +124,7 @@ export function useRealtimeSync(
         if (wsId && userId) qc.invalidateQueries({ queryKey: pinKeys.all(wsId, userId) });
       },
       pipeline_template: () => {
-        const wsId = workspaceStore.getState().workspace?.id;
+        const wsId = getCurrentWsId();
         if (wsId) qc.invalidateQueries({ queryKey: pipelineKeys.all(wsId) });
       },
       daemon: () => {

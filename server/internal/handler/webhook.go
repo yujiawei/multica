@@ -49,7 +49,7 @@ type UpdateWebhookRequest struct {
 
 // ListWebhooks returns all webhooks for the current workspace.
 func (h *Handler) ListWebhooks(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	if _, ok := h.workspaceMember(w, r, workspaceID); !ok {
 		return
 	}
@@ -69,7 +69,7 @@ func (h *Handler) ListWebhooks(w http.ResponseWriter, r *http.Request) {
 
 // CreateWebhook creates a new webhook for the current workspace.
 func (h *Handler) CreateWebhook(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	if _, ok := h.requireWorkspaceRole(w, r, workspaceID, "workspace not found", "owner", "admin"); !ok {
 		return
 	}
@@ -113,7 +113,7 @@ func (h *Handler) CreateWebhook(w http.ResponseWriter, r *http.Request) {
 // UpdateWebhook updates an existing webhook.
 func (h *Handler) UpdateWebhook(w http.ResponseWriter, r *http.Request) {
 	webhookID := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 
 	if _, ok := h.requireWorkspaceRole(w, r, workspaceID, "workspace not found", "owner", "admin"); !ok {
 		return
@@ -161,7 +161,7 @@ func (h *Handler) UpdateWebhook(w http.ResponseWriter, r *http.Request) {
 // DeleteWebhook deletes a webhook.
 func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
 	webhookID := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 
 	if _, ok := h.requireWorkspaceRole(w, r, workspaceID, "workspace not found", "owner", "admin"); !ok {
 		return
@@ -186,7 +186,7 @@ func (h *Handler) DeleteWebhook(w http.ResponseWriter, r *http.Request) {
 // TestWebhook sends a test payload to a webhook endpoint.
 func (h *Handler) TestWebhook(w http.ResponseWriter, r *http.Request) {
 	webhookID := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 
 	if _, ok := h.requireWorkspaceRole(w, r, workspaceID, "workspace not found", "owner", "admin"); !ok {
 		return

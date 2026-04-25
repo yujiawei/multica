@@ -1,10 +1,7 @@
 "use client";
 
 import React from "react";
-import { User, Palette, Key, Settings, Users, FolderGit2 } from "lucide-react";
-import { User, Palette, Key, Settings, Users, FolderGit2, Webhook } from "lucide-react";
-import { User, Palette, Key, Settings, Users, FolderGit2, GitBranch } from "lucide-react";
-import { User, Palette, Key, Settings, Users, FolderGit2, Workflow } from "lucide-react";
+import { User, Palette, Key, Settings, Users, FolderGit2, Webhook, GitBranch, Workflow } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@multica/ui/components/ui/tabs";
 import { useCurrentWorkspace } from "@multica/core/paths";
 import { AccountTab } from "./account-tab";
@@ -28,8 +25,8 @@ const workspaceTabs = [
   { value: "repositories", label: "Repositories", icon: FolderGit2 },
   { value: "github-sync", label: "GitHub Sync", icon: GitBranch },
   { value: "members", label: "Members", icon: Users },
-{ value: "webhooks", label: "Webhooks", icon: Webhook },
-{ value: "pipelines", label: "Pipelines", icon: Workflow },
+  { value: "webhooks", label: "Webhooks", icon: Webhook },
+  { value: "pipelines", label: "Pipelines", icon: Workflow },
 ];
 
 export interface ExtraSettingsTab {
@@ -97,6 +94,7 @@ export function SettingsPage({ extraAccountTabs }: SettingsPageProps = {}) {
             <TabsContent key={tab.value} value={tab.value}>{tab.content}</TabsContent>
           ))}
           <TabsContent value="webhooks"><WebhooksTab /></TabsContent>
+          <TabsContent value="pipelines"><PipelinesTab /></TabsContent>
         </div>
       </div>
     </Tabs>

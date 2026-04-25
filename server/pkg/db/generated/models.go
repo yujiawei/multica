@@ -286,6 +286,9 @@ type Issue struct {
 	OriginType         pgtype.Text        `json:"origin_type"`
 	OriginID           pgtype.UUID        `json:"origin_id"`
 	FirstExecutedAt    pgtype.Timestamptz `json:"first_executed_at"`
+	PipelineTemplateID pgtype.UUID        `json:"pipeline_template_id"`
+	CurrentStage       pgtype.Text        `json:"current_stage"`
+	StageResults       []byte             `json:"stage_results"`
 }
 
 type IssueDependency struct {

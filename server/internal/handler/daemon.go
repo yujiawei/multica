@@ -670,6 +670,8 @@ func (h *Handler) ClaimTaskByRuntime(w http.ResponseWriter, r *http.Request) {
 						contents[i] = l.Content
 					}
 					resp.Learnings = contents
+				}
+			}
 // Populate pipeline stage info if the issue has a pipeline.
 			if issue.PipelineTemplateID.Valid && issue.CurrentStage.Valid {
 				resp.PipelineStage = issue.CurrentStage.String

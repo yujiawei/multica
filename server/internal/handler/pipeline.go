@@ -54,7 +54,7 @@ type UpdatePipelineTemplateRequest struct {
 }
 
 func (h *Handler) ListPipelineTemplates(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	templates, err := h.Queries.ListPipelineTemplates(r.Context(), parseUUID(workspaceID))
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, "failed to list pipeline templates")
@@ -69,7 +69,7 @@ func (h *Handler) ListPipelineTemplates(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) GetPipelineTemplate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	tmpl, err := h.Queries.GetPipelineTemplateInWorkspace(r.Context(), db.GetPipelineTemplateInWorkspaceParams{
 		ID:          parseUUID(id),
 		WorkspaceID: parseUUID(workspaceID),
@@ -106,7 +106,7 @@ func (h *Handler) CreatePipelineTemplate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	userID, ok := requireUserID(w, r)
 	if !ok {
 		return
@@ -128,7 +128,7 @@ func (h *Handler) CreatePipelineTemplate(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) UpdatePipelineTemplate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	if _, err := h.Queries.GetPipelineTemplateInWorkspace(r.Context(), db.GetPipelineTemplateInWorkspaceParams{
 		ID:          parseUUID(id),
 		WorkspaceID: parseUUID(workspaceID),
@@ -184,7 +184,7 @@ func (h *Handler) UpdatePipelineTemplate(w http.ResponseWriter, r *http.Request)
 
 func (h *Handler) DeletePipelineTemplate(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	if _, err := h.Queries.GetPipelineTemplateInWorkspace(r.Context(), db.GetPipelineTemplateInWorkspaceParams{
 		ID:          parseUUID(id),
 		WorkspaceID: parseUUID(workspaceID),
@@ -277,7 +277,7 @@ func (h *Handler) AdvanceIssueStage(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&req)
 
 	userID := requestUserID(r)
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	actorType, actorID := h.resolveActor(r, userID, workspaceID)
 
 	// Find current stage index

@@ -38,6 +38,10 @@ type Task struct {
 	TriggerCommentContent string     `json:"trigger_comment_content,omitempty"` // content of the triggering comment
 	ChatSessionID         string     `json:"chat_session_id,omitempty"`         // non-empty for chat tasks
 	ChatMessage           string     `json:"chat_message,omitempty"`            // user message content for chat tasks
+	ProjectID             string     `json:"project_id,omitempty"`
+	Learnings             []string   `json:"learnings,omitempty"`
+	PipelineStage         string     `json:"pipeline_stage,omitempty"`
+	PipelineInstructions  string     `json:"pipeline_instructions,omitempty"`
 }
 
 // AgentData holds agent details returned by the claim endpoint.

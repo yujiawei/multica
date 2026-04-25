@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"html"
+	"net/smtp"
 	"os"
 	"strings"
 	"unicode"
@@ -124,14 +125,65 @@ func (s *EmailService) SendInvitationEmail(to, inviterName, workspaceName, invit
 	}
 	inviteURL := fmt.Sprintf("%s/invite/%s", appURL, invitationID)
 
-	if s.client == nil {
+	params := buildInvitationParams(s.fromEmail, to, inviterName, workspaceName, inviteURL)
+
+	switch s.mode {
+	case "smtp":
+		return s.sendSMTP(to, params.Subject, params.Html)
+	case "resend":
+		_, err := s.resendClient.Emails.Send(params)
+		return err
+	default:
 		fmt.Printf("[DEV] Invitation email to %s: %s invited you to %s — %s\n", to, inviterName, workspaceName, inviteURL)
 		return nil
 	}
+}
 
-	params := buildInvitationParams(s.fromEmail, to, inviterName, workspaceName, inviteURL)
-	_, err := s.client.Emails.Send(params)
-	return err
+func (s *EmailService) sendSMTP(to, subject, body string) error {
+	auth := smtp.PlainAuth("", s.smtpUsername, s.smtpPassword, s.smtpServer)
+
+	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n%s",
+		s.fromEmail, to, subject, body)
+
+	addr := fmt.Sprintf("%s:%s", s.smtpServer, s.smtpPort)
+
+	// Port 465 uses implicit TLS
+	if s.smtpPort == "465" {
+		tlsConfig := &tls.Config{ServerName: s.smtpServer}
+		conn, err := tls.Dial("tcp", addr, tlsConfig)
+		if err != nil {
+			return fmt.Errorf("SMTP TLS dial: %w", err)
+		}
+		defer conn.Close()
+
+		c, err := smtp.NewClient(conn, s.smtpServer)
+		if err != nil {
+			return fmt.Errorf("SMTP client: %w", err)
+		}
+		defer c.Close()
+
+		if err = c.Auth(auth); err != nil {
+			return fmt.Errorf("SMTP auth: %w", err)
+		}
+		if err = c.Mail(s.fromEmail); err != nil {
+			return err
+		}
+		if err = c.Rcpt(to); err != nil {
+			return err
+		}
+		w, err := c.Data()
+		if err != nil {
+			return err
+		}
+		_, err = w.Write([]byte(msg))
+		if err != nil {
+			return err
+		}
+		return w.Close()
+	}
+
+	// Port 587 uses STARTTLS
+	return smtp.SendMail(addr, auth, s.fromEmail, []string{to}, []byte(msg))
 }
 
 // buildInvitationParams assembles the Resend request for an invitation email.

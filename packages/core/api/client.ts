@@ -67,6 +67,14 @@ import type {
   ListAutopilotsResponse,
   GetAutopilotResponse,
   ListAutopilotRunsResponse,
+  ProjectLearning,
+  CreateProjectLearningRequest,
+  ListProjectLearningsResponse,
+  PipelineTemplate,
+  CreatePipelineTemplateRequest,
+  UpdatePipelineTemplateRequest,
+  ListPipelineTemplatesResponse,
+  PipelineStatusResponse,
 } from "../types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
 import { type Logger, noopLogger } from "../logger";
@@ -985,7 +993,12 @@ export class ApiClient {
 
   async createProjectLearning(projectId: string, data: CreateProjectLearningRequest): Promise<ProjectLearning> {
     return this.fetch(`/api/projects/${projectId}/learnings`, {
-// Pipeline Templates
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Pipeline Templates
   async listPipelineTemplates(): Promise<ListPipelineTemplatesResponse> {
     return this.fetch("/api/pipeline-templates");
   }
@@ -994,18 +1007,20 @@ export class ApiClient {
     return this.fetch(`/api/pipeline-templates/${id}`);
   }
 
-  async createPipelineTemplate(data: CreatePipelineTemplateRequest): Promise<PipelineTemplate> {
+  async createPipelineTemplate(data: CreatePipelineTemplateRequest & { workspace_id?: string }): Promise<PipelineTemplate> {
     const search = new URLSearchParams();
-    if (this.workspaceId) search.set("workspace_id", this.workspaceId);
+    if (data.workspace_id) search.set("workspace_id", data.workspace_id);
     return this.fetch(`/api/pipeline-templates?${search}`, {
       method: "POST",
       body: JSON.stringify(data),
     });
   }
 
-async deleteProjectLearning(learningId: string): Promise<void> {
+  async deleteProjectLearning(learningId: string): Promise<void> {
     await this.fetch(`/api/learnings/${learningId}`, { method: "DELETE" });
-async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): Promise<PipelineTemplate> {
+  }
+
+  async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): Promise<PipelineTemplate> {
     return this.fetch(`/api/pipeline-templates/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
@@ -1025,6 +1040,48 @@ async updatePipelineTemplate(id: string, data: UpdatePipelineTemplateRequest): P
       method: "POST",
       body: JSON.stringify(data ?? {}),
     });
+  }
+
+  // Webhooks
+  async listWebhooks(): Promise<any[]> {
+    return this.fetch("/api/webhooks");
+  }
+
+  async createWebhook(data: any): Promise<any> {
+    return this.fetch("/api/webhooks", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async updateWebhook(id: string, data: any): Promise<any> {
+    return this.fetch(`/api/webhooks/${id}`, { method: "PUT", body: JSON.stringify(data) });
+  }
+
+  async deleteWebhook(id: string): Promise<void> {
+    await this.fetch(`/api/webhooks/${id}`, { method: "DELETE" });
+  }
+
+  async testWebhook(id: string): Promise<any> {
+    return this.fetch(`/api/webhooks/${id}/test`, { method: "POST" });
+  }
+
+  // GitHub Sync
+  async listGitHubSyncConfigs(): Promise<any[]> {
+    return this.fetch("/api/github-sync");
+  }
+
+  async createGitHubSyncConfig(data: any): Promise<any> {
+    return this.fetch("/api/github-sync", { method: "POST", body: JSON.stringify(data) });
+  }
+
+  async updateGitHubSyncConfig(id: string, data: any): Promise<any> {
+    return this.fetch(`/api/github-sync/${id}`, { method: "PUT", body: JSON.stringify(data) });
+  }
+
+  async deleteGitHubSyncConfig(id: string): Promise<void> {
+    await this.fetch(`/api/github-sync/${id}`, { method: "DELETE" });
+  }
+
+  async triggerGitHubSync(id: string): Promise<any> {
+    return this.fetch(`/api/github-sync/${id}/trigger`, { method: "POST" });
   }
 
   // Pins

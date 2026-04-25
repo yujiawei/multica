@@ -482,23 +482,26 @@ type ListIssuesParams struct {
 }
 
 type ListIssuesRow struct {
-	ID            pgtype.UUID        `json:"id"`
-	WorkspaceID   pgtype.UUID        `json:"workspace_id"`
-	Title         string             `json:"title"`
-	Description   pgtype.Text        `json:"description"`
-	Status        string             `json:"status"`
-	Priority      string             `json:"priority"`
-	AssigneeType  pgtype.Text        `json:"assignee_type"`
-	AssigneeID    pgtype.UUID        `json:"assignee_id"`
-	CreatorType   string             `json:"creator_type"`
-	CreatorID     pgtype.UUID        `json:"creator_id"`
-	ParentIssueID pgtype.UUID        `json:"parent_issue_id"`
-	Position      float64            `json:"position"`
-	DueDate       pgtype.Timestamptz `json:"due_date"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
-	Number        int32              `json:"number"`
-	ProjectID     pgtype.UUID        `json:"project_id"`
+	ID                 pgtype.UUID        `json:"id"`
+	WorkspaceID        pgtype.UUID        `json:"workspace_id"`
+	Title              string             `json:"title"`
+	Description        pgtype.Text        `json:"description"`
+	Status             string             `json:"status"`
+	Priority           string             `json:"priority"`
+	AssigneeType       pgtype.Text        `json:"assignee_type"`
+	AssigneeID         pgtype.UUID        `json:"assignee_id"`
+	CreatorType        string             `json:"creator_type"`
+	CreatorID          pgtype.UUID        `json:"creator_id"`
+	ParentIssueID      pgtype.UUID        `json:"parent_issue_id"`
+	Position           float64            `json:"position"`
+	DueDate            pgtype.Timestamptz `json:"due_date"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	Number             int32              `json:"number"`
+	ProjectID          pgtype.UUID        `json:"project_id"`
+	PipelineTemplateID pgtype.UUID        `json:"pipeline_template_id"`
+	CurrentStage       pgtype.Text        `json:"current_stage"`
+	StageResults       []byte             `json:"stage_results"`
 }
 
 func (q *Queries) ListIssues(ctx context.Context, arg ListIssuesParams) ([]ListIssuesRow, error) {
@@ -578,23 +581,26 @@ type ListOpenIssuesParams struct {
 }
 
 type ListOpenIssuesRow struct {
-	ID            pgtype.UUID        `json:"id"`
-	WorkspaceID   pgtype.UUID        `json:"workspace_id"`
-	Title         string             `json:"title"`
-	Description   pgtype.Text        `json:"description"`
-	Status        string             `json:"status"`
-	Priority      string             `json:"priority"`
-	AssigneeType  pgtype.Text        `json:"assignee_type"`
-	AssigneeID    pgtype.UUID        `json:"assignee_id"`
-	CreatorType   string             `json:"creator_type"`
-	CreatorID     pgtype.UUID        `json:"creator_id"`
-	ParentIssueID pgtype.UUID        `json:"parent_issue_id"`
-	Position      float64            `json:"position"`
-	DueDate       pgtype.Timestamptz `json:"due_date"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
-	Number        int32              `json:"number"`
-	ProjectID     pgtype.UUID        `json:"project_id"`
+	ID                 pgtype.UUID        `json:"id"`
+	WorkspaceID        pgtype.UUID        `json:"workspace_id"`
+	Title              string             `json:"title"`
+	Description        pgtype.Text        `json:"description"`
+	Status             string             `json:"status"`
+	Priority           string             `json:"priority"`
+	AssigneeType       pgtype.Text        `json:"assignee_type"`
+	AssigneeID         pgtype.UUID        `json:"assignee_id"`
+	CreatorType        string             `json:"creator_type"`
+	CreatorID          pgtype.UUID        `json:"creator_id"`
+	ParentIssueID      pgtype.UUID        `json:"parent_issue_id"`
+	Position           float64            `json:"position"`
+	DueDate            pgtype.Timestamptz `json:"due_date"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	Number             int32              `json:"number"`
+	ProjectID          pgtype.UUID        `json:"project_id"`
+	PipelineTemplateID pgtype.UUID        `json:"pipeline_template_id"`
+	CurrentStage       pgtype.Text        `json:"current_stage"`
+	StageResults       []byte             `json:"stage_results"`
 }
 
 func (q *Queries) ListOpenIssues(ctx context.Context, arg ListOpenIssuesParams) ([]ListOpenIssuesRow, error) {

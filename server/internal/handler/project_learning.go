@@ -43,7 +43,7 @@ type CreateProjectLearningRequest struct {
 
 func (h *Handler) ListProjectLearnings(w http.ResponseWriter, r *http.Request) {
 	projectID := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 
 	var categoryFilter pgtype.Text
 	if c := r.URL.Query().Get("category"); c != "" {
@@ -69,7 +69,7 @@ func (h *Handler) ListProjectLearnings(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) CreateProjectLearning(w http.ResponseWriter, r *http.Request) {
 	projectID := chi.URLParam(r, "id")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 
 	// Verify project exists in workspace.
 	if _, err := h.Queries.GetProjectInWorkspace(r.Context(), db.GetProjectInWorkspaceParams{
@@ -124,7 +124,7 @@ func (h *Handler) CreateProjectLearning(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) DeleteProjectLearning(w http.ResponseWriter, r *http.Request) {
 	learningID := chi.URLParam(r, "learningId")
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 
 	if _, err := h.Queries.GetProjectLearningInWorkspace(r.Context(), db.GetProjectLearningInWorkspaceParams{
 		ID: parseUUID(learningID), WorkspaceID: parseUUID(workspaceID),
@@ -149,7 +149,7 @@ func (h *Handler) DeleteProjectLearning(w http.ResponseWriter, r *http.Request) 
 
 // GetLearningsForInjection returns learnings for a project, intended for daemon injection.
 func (h *Handler) GetLearningsForInjection(w http.ResponseWriter, r *http.Request) {
-	workspaceID := resolveWorkspaceID(r)
+	workspaceID := h.resolveWorkspaceID(r)
 	projectID := r.URL.Query().Get("project_id")
 	if projectID == "" {
 		writeError(w, http.StatusBadRequest, "project_id is required")
