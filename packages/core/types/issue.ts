@@ -1,3 +1,5 @@
+import type { Label } from "./label";
+
 export type IssueStatus =
   | "backlog"
   | "todo"
@@ -9,7 +11,7 @@ export type IssueStatus =
 
 export type IssuePriority = "urgent" | "high" | "medium" | "low" | "none";
 
-export type IssueAssigneeType = "member" | "agent";
+export type IssueAssigneeType = "member" | "agent" | "squad";
 
 export interface IssueReaction {
   id: string;
@@ -41,6 +43,7 @@ export interface Issue {
   current_stage: string | null;
   stage_results?: Record<string, StageResult> | null;
   reactions?: IssueReaction[];
+  labels?: Label[];
   created_at: string;
   updated_at: string;
 }

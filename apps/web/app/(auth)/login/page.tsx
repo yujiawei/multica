@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { sanitizeNextUrl, useAuthStore } from "@multica/core/auth";
 import { useConfigStore } from "@multica/core/config";
 import { workspaceKeys } from "@multica/core/workspace/queries";
@@ -22,12 +22,42 @@ import {
 } from "@multica/ui/components/ui/card";
 import { Button } from "@multica/ui/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { captureDownloadIntent } from "@multica/core/analytics";
 import { setLoggedInCookie } from "@/features/auth/auth-cookie";
+import Link from "next/link";
 import { LoginPage, validateCliCallback } from "@multica/views/auth";
+import { useT } from "@multica/views/i18n";
+
+/**
+ * Pick where a logged-in user with no explicit `?next=` should land.
+ * Un-onboarded users with pending invitations on their email get routed to
+ * the batch /invitations page; everyone else falls through to the standard
+ * resolver. A network blip on listMyInvitations is non-fatal — we fall
+ * through rather than trap the user on an error screen.
+ */
+async function resolveLoggedInDestination(
+  qc: QueryClient,
+  hasOnboarded: boolean,
+  workspaces: Workspace[],
+): Promise<string> {
+  if (!hasOnboarded) {
+    try {
+      const invites = await api.listMyInvitations();
+      if (invites.length > 0) {
+        qc.setQueryData(workspaceKeys.myInvitations(), invites);
+        return paths.invitations();
+      }
+    } catch {
+      // fall through
+    }
+  }
+  return resolvePostAuthDestination(workspaces, hasOnboarded);
+}
 
 function LoginPageContent() {
   const router = useRouter();
   const qc = useQueryClient();
+  const { t } = useT("auth");
   const googleClientId = useConfigStore((state) => state.googleClientId);
   const user = useAuthStore((s) => s.user);
   const isLoading = useAuthStore((s) => s.isLoading);
@@ -65,13 +95,11 @@ function LoginPageContent() {
         })
         .catch((err) => {
           setDesktopError(
-            err instanceof Error ? err.message : "Failed to prepare Desktop sign-in",
+            err instanceof Error
+              ? err.message
+              : t(($) => $.web.desktop_handoff.prepare_failed),
           );
         });
-      return;
-    }
-    if (!hasOnboarded) {
-      router.replace(paths.onboarding());
       return;
     }
     if (nextUrl) {
@@ -79,24 +107,23 @@ function LoginPageContent() {
       return;
     }
     const list = qc.getQueryData<Workspace[]>(workspaceKeys.list()) ?? [];
-    router.replace(resolvePostAuthDestination(list, hasOnboarded));
+    void resolveLoggedInDestination(qc, hasOnboarded, list).then((dest) =>
+      router.replace(dest),
+    );
   }, [isLoading, user, router, nextUrl, cliCallbackRaw, isDesktopHandoff, hasOnboarded, qc]);
 
-  const handleSuccess = () => {
+  const handleSuccess = async () => {
     // Read the latest user snapshot directly — the closure's `hasOnboarded`
     // was captured before login completed and would be stale here.
     const currentUser = useAuthStore.getState().user;
     const onboarded = currentUser?.onboarded_at != null;
-    if (!onboarded) {
-      router.push(paths.onboarding());
-      return;
-    }
     if (nextUrl) {
       router.push(nextUrl);
       return;
     }
     const list = qc.getQueryData<Workspace[]>(workspaceKeys.list()) ?? [];
-    router.push(resolvePostAuthDestination(list, onboarded));
+    const dest = await resolveLoggedInDestination(qc, onboarded, list);
+    router.push(dest);
   };
 
   // Build Google OAuth state: encode platform + next URL so the callback
@@ -117,7 +144,9 @@ function LoginPageContent() {
         <div className="flex min-h-screen items-center justify-center">
           <Card className="w-full max-w-sm">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Sign-in Failed</CardTitle>
+              <CardTitle className="text-2xl">
+                {t(($) => $.web.desktop_handoff.failed_title)}
+              </CardTitle>
               <CardDescription>{desktopError}</CardDescription>
             </CardHeader>
           </Card>
@@ -128,11 +157,13 @@ function LoginPageContent() {
       <div className="flex min-h-screen items-center justify-center">
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Opening Multica</CardTitle>
+            <CardTitle className="text-2xl">
+              {t(($) => $.web.desktop_handoff.opening_title)}
+            </CardTitle>
             <CardDescription>
               {desktopToken
-                ? "You should see a prompt to open the Multica desktop app. If nothing happens, click the button below."
-                : "Preparing Desktop sign-in..."}
+                ? t(($) => $.web.desktop_handoff.opening_description)
+                : t(($) => $.web.desktop_handoff.preparing)}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
@@ -143,7 +174,7 @@ function LoginPageContent() {
                   window.location.href = `multica://auth/callback?token=${encodeURIComponent(desktopToken)}`;
                 }}
               >
-                Open Multica Desktop
+                {t(($) => $.web.desktop_handoff.open_button)}
               </Button>
             ) : (
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -172,6 +203,18 @@ function LoginPageContent() {
           : undefined
       }
       onTokenObtained={setLoggedInCookie}
+      extra={
+        <span className="text-xs text-muted-foreground">
+          {t(($) => $.web.prefer_desktop)}{" "}
+          <Link
+            href="/download"
+            onClick={() => captureDownloadIntent("login")}
+            className="font-medium text-foreground underline decoration-foreground/30 underline-offset-4 hover:decoration-foreground/70"
+          >
+            {t(($) => $.web.download)}
+          </Link>
+        </span>
+      }
     />
   );
 }

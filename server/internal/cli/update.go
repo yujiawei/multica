@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+const DefaultUpdateDownloadTimeout = 120 * time.Second
+
 // GitHubRelease is the subset of the GitHub releases API response we need.
 type GitHubRelease struct {
 	TagName string               `json:"tag_name"`
@@ -120,6 +122,23 @@ func FetchLatestRelease() (*GitHubRelease, error) {
 	return &release, nil
 }
 
+// knownBrewPrefixes lists the install roots Homebrew uses on each platform.
+// Order is irrelevant — the prefixes do not nest.
+var knownBrewPrefixes = []string{"/opt/homebrew", "/usr/local", "/home/linuxbrew/.linuxbrew"}
+
+// MatchKnownBrewPrefix returns the Homebrew prefix whose Cellar contains path,
+// or "" if path is not under a known Cellar. It is the offline equivalent of
+// `brew --prefix`: callers reach for it when `brew --prefix` is unavailable
+// (brew not on PATH) but the binary's path still betrays its install root.
+func MatchKnownBrewPrefix(path string) string {
+	for _, prefix := range knownBrewPrefixes {
+		if strings.HasPrefix(path, prefix+"/Cellar/") {
+			return prefix
+		}
+	}
+	return ""
+}
+
 // IsBrewInstall checks whether the running multica binary was installed via Homebrew.
 func IsBrewInstall() bool {
 	exePath, err := os.Executable()
@@ -136,12 +155,7 @@ func IsBrewInstall() bool {
 		return true
 	}
 
-	for _, prefix := range []string{"/opt/homebrew", "/usr/local", "/home/linuxbrew/.linuxbrew"} {
-		if strings.HasPrefix(resolved, prefix+"/Cellar/") {
-			return true
-		}
-	}
-	return false
+	return MatchKnownBrewPrefix(resolved) != ""
 }
 
 // GetBrewPrefix returns the Homebrew prefix by running `brew --prefix`, or empty string.
@@ -164,9 +178,21 @@ func UpdateViaBrew() (string, error) {
 	return string(out), nil
 }
 
+func updateDownloadTimeoutOrDefault(timeout time.Duration) time.Duration {
+	if timeout <= 0 {
+		return DefaultUpdateDownloadTimeout
+	}
+	return timeout
+}
+
 // UpdateViaDownload downloads the latest release binary from GitHub and replaces
 // the current executable in-place. Returns the combined output message and any error.
 func UpdateViaDownload(targetVersion string) (string, error) {
+	return UpdateViaDownloadWithTimeout(targetVersion, DefaultUpdateDownloadTimeout)
+}
+
+// UpdateViaDownloadWithTimeout downloads the latest release binary with a caller-selected timeout.
+func UpdateViaDownloadWithTimeout(targetVersion string, downloadTimeout time.Duration) (string, error) {
 	// Determine current binary path.
 	exePath, err := os.Executable()
 	if err != nil {
@@ -190,7 +216,7 @@ func UpdateViaDownload(targetVersion string) (string, error) {
 	assetName := asset.Name
 
 	// Download the archive.
-	client := &http.Client{Timeout: 120 * time.Second}
+	client := &http.Client{Timeout: updateDownloadTimeoutOrDefault(downloadTimeout)}
 	resp, err := client.Get(downloadURL)
 	if err != nil {
 		return "", fmt.Errorf("download failed: %w", err)

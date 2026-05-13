@@ -37,7 +37,13 @@ func registerGitHubSyncListeners(bus *events.Bus, ghSync *service.GitHubSyncServ
 
 		go func() {
 			ctx := context.Background()
-			if err := ghSync.CloseGitHubIssue(ctx, util.ParseUUID(issue.ID)); err != nil {
+			issueUUID, err := util.ParseUUID(issue.ID)
+			if err != nil {
+				slog.Error("github sync: invalid multica issue id",
+					"multica_issue_id", issue.ID, "error", err)
+				return
+			}
+			if err := ghSync.CloseGitHubIssue(ctx, issueUUID); err != nil {
 				slog.Error("github sync: failed to close github issue",
 					"multica_issue_id", issue.ID, "error", err)
 			}

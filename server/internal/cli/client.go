@@ -269,6 +269,17 @@ func (c *APIClient) PatchJSON(ctx context.Context, path string, body any, out an
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
+// AttachmentResponse mirrors the server's upload-file response.
+type AttachmentResponse struct {
+	ID          string `json:"id"`
+	URL         string `json:"url"`
+	DownloadURL string `json:"download_url"`
+	Filename    string `json:"filename"`
+	ContentType string `json:"content_type"`
+	SizeBytes   int64  `json:"size_bytes"`
+	CreatedAt   string `json:"created_at"`
+}
+
 // UploadFile uploads a file via multipart form to /api/upload-file.
 // It returns the attachment ID from the server response.
 func (c *APIClient) UploadFile(ctx context.Context, fileData []byte, filename string, issueID string) (string, error) {
@@ -323,13 +334,93 @@ func (c *APIClient) UploadFile(ctx context.Context, fileData []byte, filename st
 	return id, nil
 }
 
+// UploadFileWithURL uploads a file via multipart form to /api/upload-file
+// without associating it with an issue or comment. It decodes the full
+// AttachmentResponse and returns the attachment ID and URL.
+func (c *APIClient) UploadFileWithURL(ctx context.Context, fileData []byte, filename string) (string, string, error) {
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+
+	part, err := writer.CreateFormFile("file", filepath.Base(filename))
+	if err != nil {
+		return "", "", fmt.Errorf("create form file: %w", err)
+	}
+	if _, err := part.Write(fileData); err != nil {
+		return "", "", fmt.Errorf("write file data: %w", err)
+	}
+
+	if err := writer.Close(); err != nil {
+		return "", "", fmt.Errorf("close multipart writer: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.BaseURL+"/api/upload-file", &body)
+	if err != nil {
+		return "", "", err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	c.setHeaders(req)
+
+	// Use a client that respects the context deadline for slow uploads
+	// (e.g. avatar uploads with 5MB files). The default 15s HTTP client
+	// timeout shadows any longer context deadline.
+	httpClient := c.HTTPClient
+	if deadline, ok := ctx.Deadline(); ok {
+		remaining := time.Until(deadline)
+		if remaining > httpClient.Timeout {
+			clientCopy := *httpClient
+			clientCopy.Timeout = remaining
+			httpClient = &clientCopy
+		}
+	}
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		respData, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		return "", "", fmt.Errorf("upload file returned %d: %s", resp.StatusCode, strings.TrimSpace(string(respData)))
+	}
+
+	var result AttachmentResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", "", fmt.Errorf("decode upload response: %w", err)
+	}
+	if result.URL == "" {
+		return "", "", fmt.Errorf("upload response missing attachment url")
+	}
+	// Allow empty ID: the server returns id="" in the fallback path where
+	// S3 upload succeeded but the attachment DB record failed. The file
+	// is still usable via its URL.
+	return result.ID, result.URL, nil
+}
+
 // DownloadFile downloads a file from the given URL and returns the response body.
 // This is used for downloading attachments via their signed download_url.
 // Downloads are limited to 100 MB to match the upload size limit.
+//
+// The URL may be absolute (a signed CloudFront/S3 URL) or relative
+// (a server-relative path like "/uploads/...") depending on how the
+// server is configured. Relative URLs are resolved against the client's
+// BaseURL and sent with the standard auth headers; absolute URLs are
+// used as-is so that their query-string signatures are not disturbed.
 func (c *APIClient) DownloadFile(ctx context.Context, downloadURL string) ([]byte, error) {
+	isRelative := !strings.HasPrefix(downloadURL, "http://") && !strings.HasPrefix(downloadURL, "https://")
+	if isRelative {
+		if c.BaseURL == "" {
+			return nil, fmt.Errorf("download URL %q is relative but client has no BaseURL", downloadURL)
+		}
+		downloadURL = c.BaseURL + downloadURL
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, downloadURL, nil)
 	if err != nil {
 		return nil, err
+	}
+	if isRelative {
+		c.setHeaders(req)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

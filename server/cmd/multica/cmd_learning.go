@@ -48,13 +48,9 @@ func init() {
 	learningListCmd.Flags().String("output", "table", "Output format: table or json")
 }
 
-func resolveProjectID(cmd *cobra.Command) string {
-	return cli.FlagOrEnv(cmd, "project-id", "MULTICA_PROJECT_ID", "")
-}
-
 func runLearningAdd(cmd *cobra.Command, _ []string) error {
-	projectID := resolveProjectID(cmd)
-	if projectID == "" {
+	projectInput := cli.FlagOrEnv(cmd, "project-id", "MULTICA_PROJECT_ID", "")
+	if projectInput == "" {
 		return fmt.Errorf("--project-id is required (or set MULTICA_PROJECT_ID)")
 	}
 
@@ -83,6 +79,12 @@ func runLearningAdd(cmd *cobra.Command, _ []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
+	project, err := resolveProjectID(ctx, client, projectInput)
+	if err != nil {
+		return err
+	}
+	projectID := project.ID
+
 	body := map[string]any{
 		"content":  content,
 		"category": category,
@@ -102,8 +104,8 @@ func runLearningAdd(cmd *cobra.Command, _ []string) error {
 }
 
 func runLearningList(cmd *cobra.Command, _ []string) error {
-	projectID := resolveProjectID(cmd)
-	if projectID == "" {
+	projectInput := cli.FlagOrEnv(cmd, "project-id", "MULTICA_PROJECT_ID", "")
+	if projectInput == "" {
 		return fmt.Errorf("--project-id is required (or set MULTICA_PROJECT_ID)")
 	}
 
@@ -114,6 +116,12 @@ func runLearningList(cmd *cobra.Command, _ []string) error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
+
+	project, err := resolveProjectID(ctx, client, projectInput)
+	if err != nil {
+		return err
+	}
+	projectID := project.ID
 
 	path := "/api/projects/" + projectID + "/learnings"
 	if cat, _ := cmd.Flags().GetString("category"); cat != "" {
