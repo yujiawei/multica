@@ -96,6 +96,7 @@ type Handler struct {
 	LocalSkillImportStore LocalSkillImportStore
 	LivenessStore         LivenessStore
 	HeartbeatScheduler    HeartbeatScheduler
+WebhookService        *service.WebhookService
 	Storage               storage.Storage
 	CFSigner              *auth.CloudFrontSigner
 	Analytics             analytics.Client
@@ -125,6 +126,8 @@ func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *event
 
 	taskSvc := service.NewTaskService(queries, txStarter, hub, bus, daemonHub)
 	taskSvc.Analytics = analyticsClient
+	webhookSvc := service.NewWebhookService(queries)
+	taskSvc.WebhookSvc = webhookSvc
 	return &Handler{
 		Queries:               queries,
 		DB:                    executor,
@@ -141,6 +144,7 @@ func New(queries *db.Queries, txStarter txStarter, hub *realtime.Hub, bus *event
 		LocalSkillImportStore: NewInMemoryLocalSkillImportStore(),
 		LivenessStore:         NewNoopLivenessStore(),
 		HeartbeatScheduler:    NewPassthroughHeartbeatScheduler(queries),
+WebhookService:        webhookSvc,
 		Storage:               store,
 		CFSigner:              cfSigner,
 		Analytics:             analyticsClient,

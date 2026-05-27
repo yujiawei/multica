@@ -25,6 +25,7 @@ import type { ChildProgress } from "./list-row";
 import { IssueActionsContextMenu } from "../actions";
 import { LabelChip } from "../../labels/label-chip";
 import { IssueAgentActivityIndicator } from "./issue-agent-activity-indicator";
+import { PipelineProgress } from "./pipeline-progress";
 import { useT } from "../../i18n";
 
 function formatDate(date: string): string {
@@ -193,6 +194,14 @@ export const BoardCardContent = memo(function BoardCardContent({
       <p className="mt-1 text-sm font-medium leading-snug line-clamp-2">
         {issue.title}
       </p>
+
+      {/* Pipeline stage progress (fork) */}
+      {issue.pipeline_template_id && issue.current_stage && issue.stage_results && (
+        <PipelineProgress
+          currentStage={issue.current_stage}
+          stageResults={issue.stage_results}
+        />
+      )}
 
       {showDescription && (() => {
         const preview = descriptionPreview(issue.description!);

@@ -276,6 +276,17 @@ type GithubInstallation struct {
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 }
 
+type GithubIssueMapping struct {
+	ID                pgtype.UUID        `json:"id"`
+	WorkspaceID       pgtype.UUID        `json:"workspace_id"`
+	ConfigID          pgtype.UUID        `json:"config_id"`
+	GithubRepo        string             `json:"github_repo"`
+	GithubIssueNumber int32              `json:"github_issue_number"`
+	GithubIssueUrl    string             `json:"github_issue_url"`
+	MulticaIssueID    pgtype.UUID        `json:"multica_issue_id"`
+	SyncedAt          pgtype.Timestamptz `json:"synced_at"`
+}
+
 type GithubPullRequest struct {
 	ID              pgtype.UUID        `json:"id"`
 	WorkspaceID     pgtype.UUID        `json:"workspace_id"`
@@ -310,6 +321,19 @@ type GithubPullRequestCheckSuite struct {
 	Conclusion pgtype.Text        `json:"conclusion"`
 	Status     string             `json:"status"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type GithubSyncConfig struct {
+	ID             pgtype.UUID        `json:"id"`
+	WorkspaceID    pgtype.UUID        `json:"workspace_id"`
+	RepoOwner      string             `json:"repo_owner"`
+	RepoName       string             `json:"repo_name"`
+	LabelFilter    string             `json:"label_filter"`
+	DefaultAgentID pgtype.UUID        `json:"default_agent_id"`
+	GithubToken    pgtype.Text        `json:"github_token"`
+	Active         bool               `json:"active"`
+	LastSyncedAt   pgtype.Timestamptz `json:"last_synced_at"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 type InboxItem struct {
@@ -355,6 +379,9 @@ type Issue struct {
 	FirstExecutedAt    pgtype.Timestamptz `json:"first_executed_at"`
 	StartDate          pgtype.Timestamptz `json:"start_date"`
 	Metadata           []byte             `json:"metadata"`
+	PipelineTemplateID pgtype.UUID        `json:"pipeline_template_id"`
+	CurrentStage       pgtype.Text        `json:"current_stage"`
+	StageResults       []byte             `json:"stage_results"`
 }
 
 type IssueDependency struct {
@@ -442,6 +469,16 @@ type PinnedItem struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 }
 
+type PipelineTemplate struct {
+	ID          pgtype.UUID        `json:"id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	Name        string             `json:"name"`
+	Description pgtype.Text        `json:"description"`
+	Stages      []byte             `json:"stages"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Project struct {
 	ID          pgtype.UUID        `json:"id"`
 	WorkspaceID pgtype.UUID        `json:"workspace_id"`
@@ -454,6 +491,17 @@ type Project struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 	Priority    string             `json:"priority"`
+}
+
+type ProjectLearning struct {
+	ID           pgtype.UUID        `json:"id"`
+	WorkspaceID  pgtype.UUID        `json:"workspace_id"`
+	ProjectID    pgtype.UUID        `json:"project_id"`
+	Content      string             `json:"content"`
+	Source       pgtype.Text        `json:"source"`
+	SourceTaskID pgtype.UUID        `json:"source_task_id"`
+	Category     string             `json:"category"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 }
 
 type ProjectResource struct {
@@ -626,6 +674,17 @@ type WebhookDelivery struct {
 	ReceivedAt             pgtype.Timestamptz `json:"received_at"`
 	LastAttemptAt          pgtype.Timestamptz `json:"last_attempt_at"`
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+}
+
+type Webhook struct {
+	ID          pgtype.UUID        `json:"id"`
+	WorkspaceID pgtype.UUID        `json:"workspace_id"`
+	Url         string             `json:"url"`
+	Secret      pgtype.Text        `json:"secret"`
+	Events      []string           `json:"events"`
+	Active      bool               `json:"active"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Workspace struct {

@@ -414,6 +414,8 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Delete("/reactions", h.RemoveIssueReaction)
 					r.Get("/attachments", h.ListAttachments)
 					r.Get("/children", h.ListChildIssues)
+					r.Get("/pipeline-status", h.GetIssuePipelineStatus)
+					r.Post("/advance-stage", h.AdvanceIssueStage)
 					r.Get("/labels", h.ListLabelsForIssue)
 					r.Post("/labels", h.AttachLabel)
 					r.Delete("/labels/{labelId}", h.DetachLabel)
@@ -447,6 +449,8 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Get("/", h.GetProject)
 					r.Put("/", h.UpdateProject)
 					r.Delete("/", h.DeleteProject)
+					r.Get("/learnings", h.ListProjectLearnings)
+					r.Post("/learnings", h.CreateProjectLearning)
 					r.Get("/resources", h.ListProjectResources)
 					r.Post("/resources", h.CreateProjectResource)
 					r.Delete("/resources/{resourceId}", h.DeleteProjectResource)
@@ -493,6 +497,21 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 						r.Post("/rotate-webhook-token", h.RotateAutopilotTriggerWebhookToken)
 						r.Put("/signing-secret", h.SetAutopilotTriggerSigningSecret)
 					})
+				})
+			})
+
+			// Learnings
+			r.Get("/api/learnings/inject", h.GetLearningsForInjection)
+			r.Delete("/api/learnings/{learningId}", h.DeleteProjectLearning)
+
+			// Pipeline Templates
+			r.Route("/api/pipeline-templates", func(r chi.Router) {
+				r.Get("/", h.ListPipelineTemplates)
+				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreatePipelineTemplate)
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", h.GetPipelineTemplate)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdatePipelineTemplate)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeletePipelineTemplate)
 				})
 			})
 
@@ -560,6 +579,17 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Get("/files", h.ListSkillFiles)
 					r.Put("/files", h.UpsertSkillFile)
 					r.Delete("/files/{fileId}", h.DeleteSkillFile)
+				})
+			})
+
+			// GitHub Sync
+			r.Route("/api/github-sync", func(r chi.Router) {
+				r.Get("/", h.ListGitHubSyncConfigs)
+				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreateGitHubSyncConfig)
+				r.Route("/{id}", func(r chi.Router) {
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdateGitHubSyncConfig)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeleteGitHubSyncConfig)
+					r.Post("/sync", h.TriggerGitHubSync)
 				})
 			})
 
@@ -639,6 +669,17 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 				})
 			})
 			r.Get("/api/chat/pending-tasks", h.ListPendingChatTasks)
+
+			// Webhooks
+			r.Route("/api/webhooks", func(r chi.Router) {
+				r.Get("/", h.ListWebhooks)
+				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreateWebhook)
+				r.Route("/{id}", func(r chi.Router) {
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdateWebhook)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeleteWebhook)
+					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/test", h.TestWebhook)
+				})
+			})
 
 			// Inbox
 			r.Route("/api/inbox", func(r chi.Router) {

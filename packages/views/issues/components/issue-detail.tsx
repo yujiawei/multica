@@ -62,6 +62,7 @@ import { useAuthStore } from "@multica/core/auth";
 import { useCurrentWorkspace, useWorkspacePaths } from "@multica/core/paths";
 import { useActorName } from "@multica/core/workspace/hooks";
 import { useWorkspaceId } from "@multica/core/hooks";
+import { projectLearningsOptions } from "@multica/core/learnings/queries";
 import { issueListOptions, issueDetailOptions, childIssuesOptions, issueUsageOptions, issueAttachmentsOptions } from "@multica/core/issues/queries";
 import { projectDetailOptions } from "@multica/core/projects/queries";
 import { ProjectIcon } from "../../projects/components/project-icon";
@@ -82,6 +83,22 @@ import { cn } from "@multica/ui/lib/utils";
 import { ProgressRing } from "./progress-ring";
 import { matchesPinyin } from "../../editor/extensions/pinyin-match";
 import { useT } from "../../i18n";
+
+function LearningsCount({ projectId }: { projectId: string }) {
+  const wsId = useWorkspaceId();
+  const { data: learnings = [] } = useQuery(projectLearningsOptions(wsId, projectId));
+  if (learnings.length === 0) return null;
+  return (
+    <PropRow label="Learnings">
+      <AppLink
+        href={`/projects/${projectId}`}
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {learnings.length} learning{learnings.length !== 1 ? "s" : ""}
+      </AppLink>
+    </PropRow>
+  );
+}
 
 function SubscriberPopoverContent({
   members,
@@ -1254,6 +1271,7 @@ export function IssueDetail({ issueId, onDelete, onDone, defaultSidebarOpen = tr
               onUpdate={handleUpdateField}
             />
           </PropRow>
+          {issue.project_id && <LearningsCount projectId={issue.project_id} />}
 
           {/* Optional props — rendered only when set on the issue OR added
               via "+ Add property" in this session. Row order follows the

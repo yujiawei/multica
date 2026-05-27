@@ -19,6 +19,7 @@ import (
 	"github.com/multica-ai/multica/server/internal/analytics"
 	"github.com/multica-ai/multica/server/internal/issueguard"
 	"github.com/multica-ai/multica/server/internal/logger"
+	"github.com/multica-ai/multica/server/internal/service"
 	"github.com/multica-ai/multica/server/internal/util"
 	"github.com/multica-ai/multica/server/pkg/agent"
 	db "github.com/multica-ai/multica/server/pkg/db/generated"
@@ -2224,6 +2225,11 @@ func (h *Handler) UpdateIssue(w http.ResponseWriter, r *http.Request) {
 		"creator_id":          uuidToString(prevIssue.CreatorID),
 	})
 
+	// Webhook notification on status change
+	if statusChanged {
+		h.sendIssueStatusWebhook(r.Context(), issue, prevIssue.Status)
+	}
+
 	// Reconcile task queue when assignee changes.
 	if assigneeChanged {
 		h.TaskService.CancelTasksForIssue(r.Context(), issue.ID)
@@ -2760,4 +2766,24 @@ func (h *Handler) BatchDeleteIssues(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("batch delete issues", append(logger.RequestAttrs(r), "count", deleted)...)
 	writeJSON(w, http.StatusOK, map[string]any{"deleted": deleted})
+}
+
+// sendIssueStatusWebhook sends a webhook notification when an issue status changes.
+func (h *Handler) sendIssueStatusWebhook(ctx context.Context, issue db.Issue, prevStatus string) {
+	if h.WebhookService == nil {
+		return
+	}
+
+	ws, err := h.Queries.GetWorkspace(ctx, issue.WorkspaceID)
+	if err != nil {
+		return
+	}
+
+	prefix := ws.IssuePrefix
+	identifier := prefix + "-" + strconv.Itoa(int(issue.Number))
+
+	h.WebhookService.SendEvent(ctx, issue.WorkspaceID, "issue.status_changed", service.WebhookPayload{
+		Workspace: service.WebhookWS{ID: uuidToString(ws.ID), Name: ws.Name},
+		Issue:     &service.WebhookIssue{ID: uuidToString(issue.ID), Identifier: identifier, Title: issue.Title, Status: issue.Status},
+	})
 }
