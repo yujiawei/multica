@@ -700,8 +700,6 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Delete("/reactions", h.RemoveIssueReaction)
 					r.Get("/attachments", h.ListAttachments)
 					r.Get("/children", h.ListChildIssues)
-					r.Get("/pipeline-status", h.GetIssuePipelineStatus)
-					r.Post("/advance-stage", h.AdvanceIssueStage)
 					r.Get("/labels", h.ListLabelsForIssue)
 					r.Post("/labels", h.AttachLabel)
 					r.Delete("/labels/{labelId}", h.DetachLabel)
@@ -735,8 +733,6 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 					r.Get("/", h.GetProject)
 					r.Put("/", h.UpdateProject)
 					r.Delete("/", h.DeleteProject)
-					r.Get("/learnings", h.ListProjectLearnings)
-					r.Post("/learnings", h.CreateProjectLearning)
 					r.Get("/resources", h.ListProjectResources)
 					r.Post("/resources", h.CreateProjectResource)
 					r.Put("/resources/{resourceId}", h.UpdateProjectResource)
@@ -784,21 +780,6 @@ func NewRouterWithOptions(pool *pgxpool.Pool, hub *realtime.Hub, bus *events.Bus
 						r.Post("/rotate-webhook-token", h.RotateAutopilotTriggerWebhookToken)
 						r.Put("/signing-secret", h.SetAutopilotTriggerSigningSecret)
 					})
-				})
-			})
-
-			// Learnings
-			r.Get("/api/learnings/inject", h.GetLearningsForInjection)
-			r.Delete("/api/learnings/{learningId}", h.DeleteProjectLearning)
-
-			// Pipeline Templates
-			r.Route("/api/pipeline-templates", func(r chi.Router) {
-				r.Get("/", h.ListPipelineTemplates)
-				r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Post("/", h.CreatePipelineTemplate)
-				r.Route("/{id}", func(r chi.Router) {
-					r.Get("/", h.GetPipelineTemplate)
-					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Put("/", h.UpdatePipelineTemplate)
-					r.With(middleware.RequireWorkspaceRole(queries, "owner", "admin")).Delete("/", h.DeletePipelineTemplate)
 				})
 			})
 

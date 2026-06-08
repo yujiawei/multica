@@ -1,4 +1,4 @@
-export type { Issue, IssueStatus, IssuePriority, IssueAssigneeType, IssueMetadata, IssueMetadataValue, IssueReaction, StageResult } from "./issue";
+export type { Issue, IssueStatus, IssuePriority, IssueAssigneeType, IssueMetadata, IssueMetadataValue, IssueReaction } from "./issue";
 export type {
   Agent,
   AgentStatus,
@@ -57,8 +57,6 @@ export type { InboxItem, InboxSeverity, InboxItemType } from "./inbox";
 export type { NotificationGroupKey, NotificationGroupValue, NotificationPreferences, NotificationPreferenceResponse } from "./notification-preference";
 export type { Comment, CommentType, CommentAuthorType, Reaction } from "./comment";
 export type { Label, CreateLabelRequest, UpdateLabelRequest, ListLabelsResponse, IssueLabelsResponse } from "./label";
-export type { ProjectLearning, LearningCategory, CreateProjectLearningRequest, ListProjectLearningsResponse } from "./learning";
-export type { PipelineStage, PipelineTemplate, ListPipelineTemplatesResponse, CreatePipelineTemplateRequest, UpdatePipelineTemplateRequest, IssuePipelineStatus, AdvanceIssueStageRequest } from "./pipeline";
 export type {
   TimelineEntry,
   AssigneeFrequencyEntry,

@@ -54,19 +54,8 @@ export interface Issue {
   start_date: string | null;
   due_date: string | null;
   metadata: IssueMetadata;
-  pipeline_template_id: string | null;
-  current_stage: string | null;
-  stage_results?: Record<string, StageResult> | null;
   reactions?: IssueReaction[];
   labels?: Label[];
   created_at: string;
   updated_at: string;
-}
-
-export interface StageResult {
-  started_at?: string;
-  completed_at?: string;
-  completed_by?: string;
-  result?: string;
-  summary?: string;
 }

@@ -89,10 +89,6 @@ const (
 	EventLabelDeleted       = "label:deleted"
 	EventIssueLabelsChanged = "issue_labels:changed"
 
-	// Learning events
-	EventLearningCreated = "learning:created"
-	EventLearningDeleted = "learning:deleted"
-
 	// Pin events
 	EventPinCreated   = "pin:created"
 	EventPinDeleted   = "pin:deleted"
@@ -128,11 +124,6 @@ const (
 	EventPullRequestLinked         = "pull_request:linked"
 	EventPullRequestUpdated        = "pull_request:updated"
 	EventPullRequestUnlinked       = "pull_request:unlinked"
-
-	// Pipeline events
-	EventPipelineTemplateCreated = "pipeline_template:created"
-	EventPipelineTemplateUpdated = "pipeline_template:updated"
-	EventPipelineTemplateDeleted = "pipeline_template:deleted"
 
 	// Lark integration events. `created` covers both first-install
 	// (UNIQUE on (workspace_id, agent_id) means at most one row per
