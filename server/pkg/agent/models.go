@@ -102,6 +102,8 @@ func ListModels(ctx context.Context, providerType, executablePath string) ([]Mod
 		return models, nil
 	case "gemini":
 		return geminiStaticModels(), nil
+	case "qwen":
+		return qwenStaticModels(), nil
 	case "antigravity":
 		// agy 1.0.6 added a `--model` flag plus an `agy models` catalog
 		// command (MUL-3125). Enumerate it on demand like the other
@@ -254,6 +256,20 @@ func geminiStaticModels() []Model {
 		{ID: "gemini-2.5-pro", Label: "Gemini 2.5 Pro", Provider: "google"},
 		{ID: "gemini-2.5-flash", Label: "Gemini 2.5 Flash", Provider: "google"},
 		{ID: "gemini-2.5-flash-lite", Label: "Gemini 2.5 Flash Lite", Provider: "google"},
+	}
+}
+
+// qwenStaticModels lists the Qwen models reachable through qwen-code. The
+// catalog is static because the model set is fixed by the upstream gateway
+// rather than enumerable from the CLI; qwen3.7-max is the daemon default and
+// matches qwenBackend's defaultQwenModel. The concrete model passed via `-m`
+// is whatever the agent's `model` field (MULTICA_QWEN_MODEL) resolves to, so
+// the IDs here double as the values the daemon forwards verbatim.
+func qwenStaticModels() []Model {
+	return []Model{
+		{ID: "qwen3.7-max", Label: "Qwen3.7 Max", Provider: "qwen", Default: true},
+		{ID: "qwen3-max", Label: "Qwen3 Max", Provider: "qwen"},
+		{ID: "qwen3-coder-plus", Label: "Qwen3 Coder Plus", Provider: "qwen"},
 	}
 }
 

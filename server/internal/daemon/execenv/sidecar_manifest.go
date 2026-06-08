@@ -251,10 +251,10 @@ func writeSidecarManifest(envRoot string, m *sidecarManifest) error {
 //
 // Pair this with CleanupRuntimeConfig on the local_directory cleanup
 // path: that function handles the runtime brief inside CLAUDE.md /
-// AGENTS.md / GEMINI.md, this one handles the sidecar tree
+// AGENTS.md / GEMINI.md / QWEN.md, this one handles the sidecar tree
 // (.agent_context/, .multica/, .claude/skills/, .github/skills/,
 // .opencode/skills/, skills/, .pi/skills/, .cursor/skills/,
-// .kimi/skills/, .kiro/skills/, .agents/skills/, fallback
+// .kimi/skills/, .kiro/skills/, .qwen/skills/, .agents/skills/, fallback
 // .agent_context/skills/). The two together restore the workdir to
 // byte-exact pre-task state.
 func CleanupSidecars(envRoot string) error {

@@ -668,6 +668,7 @@ func TestInjectRuntimeConfigPreservesUserContent(t *testing.T) {
 		{"kiro", "AGENTS.md"},
 		{"antigravity", "AGENTS.md"},
 		{"gemini", "GEMINI.md"},
+		{"qwen", "QWEN.md"},
 	}
 	for _, tc := range cases {
 		tc := tc
@@ -1017,6 +1018,7 @@ func TestCleanupRuntimeConfigByProvider(t *testing.T) {
 		{"kiro", "AGENTS.md"},
 		{"antigravity", "AGENTS.md"},
 		{"gemini", "GEMINI.md"},
+		{"qwen", "QWEN.md"},
 	}
 	for _, tc := range cases {
 		tc := tc
