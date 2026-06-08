@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -212,6 +213,17 @@ type PipelineStatusResponse struct {
 	CurrentStage       *string         `json:"current_stage"`
 	Stages             json.RawMessage `json:"stages"`
 	StageResults       json.RawMessage `json:"stage_results"`
+}
+
+// normalizeStageResults returns a valid JSON value for the stage_results
+// column, coercing nil/empty/SQL-null payloads to an empty object so the
+// API never emits a bare or invalid JSON body.
+func normalizeStageResults(raw []byte) json.RawMessage {
+	trimmed := bytes.TrimSpace(raw)
+	if len(trimmed) == 0 || string(trimmed) == "null" {
+		return json.RawMessage("{}")
+	}
+	return json.RawMessage(trimmed)
 }
 
 func (h *Handler) GetIssuePipelineStatus(w http.ResponseWriter, r *http.Request) {

@@ -28,6 +28,33 @@ docker-compose.local.yml
 .envrc
 # ...except electron-builder's source resources dir, which holds tracked
 # external users can run `pnpm ios:mobile:device:prod:release` against
+# multica.ai's production backend without copying templates first.
+!apps/mobile/.env.production
+
+# test coverage
+coverage
+
+# Go
+server/bin/
+server/tmp/
+server/migrate
+server/daemon
+server/multica
+
+# Test artifacts
+test-results/
+apps/web/test-results/
+
+# context (agent workspace)
+.context
+.agent_context/
+.multica/
+
+# local settings
+.claude/
+.tool-versions
+
+# feature tracking
 _features/
 # feature tracking
 # Go
