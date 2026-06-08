@@ -81,6 +81,7 @@ type Config struct {
 	AgentIdleWatchdog              time.Duration // force-stop a run when the backend goes silent this long with an empty queue (0 = disabled)
 	ClaudeArgs                     []string
 	CodexArgs                      []string
+	ExcludeWorkspaces              map[string]bool // workspace IDs (or slug prefixes) to skip during sync — set via MULTICA_DAEMON_EXCLUDE_WORKSPACES (comma-separated)
 }
 
 // Overrides allows CLI flags to override environment variables and defaults.
@@ -411,7 +412,28 @@ func LoadConfig(overrides Overrides) (Config, error) {
 		AgentIdleWatchdog:              agentIdleWatchdog,
 		ClaudeArgs:                     claudeArgs,
 		CodexArgs:                      codexArgs,
+		ExcludeWorkspaces:              parseExcludeWorkspaces(),
 	}, nil
+}
+
+// parseExcludeWorkspaces reads MULTICA_DAEMON_EXCLUDE_WORKSPACES (comma-separated
+// workspace IDs or slug prefixes) and returns a set for O(1) lookup.
+func parseExcludeWorkspaces() map[string]bool {
+	raw := strings.TrimSpace(os.Getenv("MULTICA_DAEMON_EXCLUDE_WORKSPACES"))
+	if raw == "" {
+		return nil
+	}
+	result := make(map[string]bool)
+	for _, part := range strings.Split(raw, ",") {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			result[part] = true
+		}
+	}
+	if len(result) == 0 {
+		return nil
+	}
+	return result
 }
 
 // officialCloudHost is the hostname of Multica's hosted cloud. It's the only

@@ -1053,6 +1053,10 @@ func (d *Daemon) syncWorkspacesFromAPI(ctx context.Context) error {
 
 	apiIDs := make(map[string]string, len(workspaces)) // id -> name
 	for _, ws := range workspaces {
+		if d.cfg.ExcludeWorkspaces[ws.ID] || d.cfg.ExcludeWorkspaces[ws.Name] {
+			d.logger.Debug("workspace sync: skipping excluded workspace", "workspace_id", ws.ID, "name", ws.Name)
+			continue
+		}
 		apiIDs[ws.ID] = ws.Name
 	}
 
