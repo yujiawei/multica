@@ -116,6 +116,15 @@ import type {
   CreateBillingCheckoutSessionResponse,
   BillingCheckoutSessionStatus,
   CreateBillingPortalSessionResponse,
+  ProjectLearning,
+  CreateProjectLearningRequest,
+  ListProjectLearningsResponse,
+  PipelineTemplate,
+  ListPipelineTemplatesResponse,
+  CreatePipelineTemplateRequest,
+  UpdatePipelineTemplateRequest,
+  IssuePipelineStatus,
+  AdvanceIssueStageRequest,
 } from "../types";
 import type { OnboardingCompletionPath } from "../onboarding/types";
 import type {
@@ -2098,6 +2107,75 @@ export class ApiClient {
     return this.fetch(`/api/lark/binding/redeem`, {
       method: "POST",
       body: JSON.stringify({ token }),
+    });
+  }
+
+  // --- Project Learnings (fork feature) ---
+  async listProjectLearnings(projectId: string): Promise<ListProjectLearningsResponse> {
+    return this.fetch(`/api/projects/${projectId}/learnings`);
+  }
+
+  async createProjectLearning(
+    projectId: string,
+    data: CreateProjectLearningRequest,
+  ): Promise<ProjectLearning> {
+    return this.fetch(`/api/projects/${projectId}/learnings`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProjectLearning(learningId: string): Promise<void> {
+    await this.fetch(`/api/learnings/${learningId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- Pipeline Templates (fork feature) ---
+  async listPipelineTemplates(): Promise<ListPipelineTemplatesResponse> {
+    return this.fetch(`/api/pipeline-templates`);
+  }
+
+  async getPipelineTemplate(id: string): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates/${id}`);
+  }
+
+  async createPipelineTemplate(
+    data: CreatePipelineTemplateRequest,
+  ): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePipelineTemplate(
+    id: string,
+    data: UpdatePipelineTemplateRequest,
+  ): Promise<PipelineTemplate> {
+    return this.fetch(`/api/pipeline-templates/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePipelineTemplate(id: string): Promise<void> {
+    await this.fetch(`/api/pipeline-templates/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async getIssuePipelineStatus(issueId: string): Promise<IssuePipelineStatus> {
+    return this.fetch(`/api/issues/${issueId}/pipeline-status`);
+  }
+
+  async advanceIssueStage(
+    issueId: string,
+    data: AdvanceIssueStageRequest,
+  ): Promise<IssuePipelineStatus> {
+    return this.fetch(`/api/issues/${issueId}/advance-stage`, {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }
 }
