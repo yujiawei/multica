@@ -162,6 +162,11 @@ func runtimeConfigPath(workDir, provider string) string {
 		return filepath.Join(workDir, "AGENTS.md")
 	case "gemini":
 		return filepath.Join(workDir, "GEMINI.md")
+	case "qwen":
+		// qwen-code reads QWEN.md natively as its primary context file (it also
+		// falls back to AGENTS.md, but QWEN.md is the documented per-project
+		// brief — see qwen-code docs/features/memory.md).
+		return filepath.Join(workDir, "QWEN.md")
 	default:
 		return ""
 	}
@@ -648,14 +653,16 @@ func buildMetaSkillContent(provider string, ctx TaskContextForEnv) string {
 		case "claude":
 			// Claude discovers skills natively from .claude/skills/ — just list names.
 			b.WriteString("You have the following skills installed (discovered automatically):\n\n")
-		case "codex", "copilot", "opencode", "openclaw", "pi", "cursor", "kimi", "kiro", "antigravity":
-			// Codex, Copilot, OpenCode, OpenClaw, Pi, Cursor, Kimi, Kiro, and
-			// Antigravity discover skills natively from their respective paths.
-			// For OpenClaw, the daemon also writes a per-task openclaw-config.json
-			// (exported via OPENCLAW_CONFIG_PATH) that pins agents.defaults.workspace
-			// to the task workdir so the CLI's scanner picks up {workDir}/skills/.
-			// Antigravity inherits Gemini CLI's workspace skill layout —
-			// {workDir}/.agents/skills/ — see resolveSkillsDir.
+		case "codex", "copilot", "opencode", "openclaw", "pi", "cursor", "kimi", "kiro", "qwen", "antigravity":
+			// Codex, Copilot, OpenCode, OpenClaw, Pi, Cursor, Kimi, Kiro, Qwen,
+			// and Antigravity discover skills natively from their respective
+			// paths. For OpenClaw, the daemon also writes a per-task
+			// openclaw-config.json (exported via OPENCLAW_CONFIG_PATH) that pins
+			// agents.defaults.workspace to the task workdir so the CLI's scanner
+			// picks up {workDir}/skills/. Antigravity inherits Gemini CLI's
+			// workspace skill layout — {workDir}/.agents/skills/. Qwen (a
+			// gemini-cli fork) discovers project skills from {workDir}/.qwen/skills/
+			// — see resolveSkillsDir.
 			b.WriteString("You have the following skills installed (discovered automatically):\n\n")
 		case "gemini", "hermes":
 			// Gemini reads GEMINI.md directly. Hermes has no native skill

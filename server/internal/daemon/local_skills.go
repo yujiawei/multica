@@ -49,6 +49,7 @@ type runtimeLocalSkillBundle struct {
 //   - Cursor: official forum guidance referencing the built-in /create-skill flow
 //     (https://forum.cursor.com/t/cursor-doesnt-know-new-skills-arens-saved/158507)
 //   - Kiro: project and user-level .kiro/skills directories discovered by Kiro CLI
+//   - Qwen: ~/.qwen/skills user-level skill root discovered by qwen-code
 //   - Antigravity: ~/.gemini/antigravity-cli/skills user-level skill root
 //     (https://antigravity.google/docs/gcli-migration "Global skills")
 //
@@ -82,6 +83,10 @@ func localSkillRootForProvider(provider string) (string, bool, error) {
 		return filepath.Join(home, ".cursor", "skills"), true, nil
 	case "kiro":
 		return filepath.Join(home, ".kiro", "skills"), true, nil
+	case "qwen":
+		// qwen-code discovers personal (user-level) skills from ~/.qwen/skills/;
+		// see qwen-code docs/features/skills.md.
+		return filepath.Join(home, ".qwen", "skills"), true, nil
 	case "antigravity":
 		// agy inherits Gemini CLI's global skill root; see
 		// https://antigravity.google/docs/gcli-migration ("Global skills").

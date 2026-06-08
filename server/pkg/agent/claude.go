@@ -279,8 +279,15 @@ func (b *claudeBackend) handleAssistant(msg claudeSDKMessage, ch chan<- Message,
 				trySend(ch, Message{Type: MessageText, Content: block.Text})
 			}
 		case "thinking":
-			if block.Text != "" {
-				trySend(ch, Message{Type: MessageThinking, Content: block.Text})
+			// Thinking blocks carry their content under a `thinking` field
+			// (not `text`). Fall back to `text` for any producer that uses
+			// the text field for reasoning content.
+			reasoning := block.Thinking
+			if reasoning == "" {
+				reasoning = block.Text
+			}
+			if reasoning != "" {
+				trySend(ch, Message{Type: MessageThinking, Content: reasoning})
 			}
 		case "tool_use":
 			var input map[string]any
@@ -455,6 +462,7 @@ func claudeUsageHasTokens(input, output, cacheRead, cacheWrite int64) bool {
 type claudeContentBlock struct {
 	Type      string          `json:"type"`
 	Text      string          `json:"text,omitempty"`
+	Thinking  string          `json:"thinking,omitempty"`
 	ID        string          `json:"id,omitempty"`
 	Name      string          `json:"name,omitempty"`
 	Input     json.RawMessage `json:"input,omitempty"`
